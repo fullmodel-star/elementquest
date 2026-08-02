@@ -276,7 +276,17 @@ const ELEMENTS = [
  {sym:"Ti",zh:"鈦",cat:"過渡金屬",zone:"metal",period:4,group:4,emoji:"🦴",fact:"質輕、堅固又抗腐蝕，常用於飛機機身、眼鏡框與人工關節等需要耐用又輕巧的場合。"},
  {sym:"Pt",zh:"鉑",cat:"過渡金屬",zone:"metal",period:6,group:10,emoji:"🚙",fact:"化學性質非常穩定的貴金屬，是汽車「觸媒轉化器」的核心材料，能把廢氣中的有害物質轉成無害氣體。"},
  {sym:"Co",zh:"鈷",cat:"過渡金屬",zone:"metal",period:4,group:9,emoji:"🔋",fact:"鋰電池正極材料的重要成分，也用於燒製藍色玻璃與陶瓷顏料，也就是「鈷藍色」的由來。"},
- {sym:"Mn",zh:"錳",cat:"過渡金屬",zone:"metal",period:4,group:7,emoji:"🔋",fact:"常用於製造乾電池的正極與合金鋼，能大幅增加鋼鐵的硬度與耐磨性。"}
+ {sym:"Mn",zh:"錳",cat:"過渡金屬",zone:"metal",period:4,group:7,emoji:"🔋",fact:"常用於製造乾電池的正極與合金鋼，能大幅增加鋼鐵的硬度與耐磨性。"},
+ {sym:"Ge",zh:"鍺",cat:"類金屬",zone:"nonmetal",period:4,group:14,emoji:"📻",fact:"早期收音機的礦石檢波器使用鍺半導體；現在則用於紅外線鏡頭與光纖通訊材料。"},
+ {sym:"As",zh:"砷",cat:"類金屬",zone:"nonmetal",period:4,group:15,emoji:"☠️",fact:"砒霜的主要成分，自古是知名毒藥；現代則微量用於半導體摻雜與部分合金，使用上需嚴格管制。"},
+ {sym:"Sb",zh:"銻",cat:"類金屬",zone:"nonmetal",period:5,group:15,emoji:"🧯",fact:"常加入塑膠與紡織品作阻燃劑，也用於鉛合金增加硬度；古埃及人曾用銻礦當眼影原料。"},
+ {sym:"Te",zh:"碲",cat:"類金屬",zone:"nonmetal",period:5,group:16,emoji:"☀️",fact:"用於CdTe薄膜太陽能電池與特殊合金，也可少量加入鋼鐵中改善加工性。"},
+ {sym:"Ga",zh:"鎵",cat:"金屬",zone:"metal",period:4,group:13,emoji:"🫳",fact:"熔點只有約30°C，放在手心就能被體溫融化，是很受歡迎的科學小把戲；也是LED與半導體的重要材料。"},
+ {sym:"In",zh:"銦",cat:"金屬",zone:"metal",period:5,group:13,emoji:"📱",fact:"手機、平板觸控螢幕的透明導電層(ITO)主要成分之一，是現代觸控科技不可或缺的稀有金屬。"},
+ {sym:"Bi",zh:"鉍",cat:"金屬",zone:"metal",period:6,group:15,emoji:"🌈",fact:"毒性極低，常作為鉛的環保替代品；結晶時會形成七彩階梯狀的漂亮晶體，是礦物收藏愛好者的心頭好。"},
+ {sym:"La",zh:"鑭",cat:"鑭系",zone:"lanth",period:6,group:3,emoji:"🔥",fact:"打火機「打火石」的主要成分之一，也用於相機與望遠鏡的高折射率鏡片。"},
+ {sym:"Ce",zh:"鈰",cat:"鑭系",zone:"lanth",period:6,group:3,emoji:"🧽",fact:"自潔烤箱的塗層與拋光玻璃的拋光劑常用到鈰，也用於打火石合金中增加火花。"},
+ {sym:"Nd",zh:"釹",cat:"鑭系",zone:"lanth",period:6,group:3,emoji:"🧲",fact:"釹磁鐵是目前最強的永久磁鐵之一，廣泛用於耳機喇叭、硬碟與電動車馬達。"}
 ];
 
 const CAT_COLOR = {
@@ -326,12 +336,13 @@ const LANTHANIDE_ROW = ["La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","
 const ACTINIDE_ROW = ["Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr"];
 
 const ZONES = [
- {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", color:"#34d399", desc:"H C N O P S Si B Se"},
+ {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", color:"#34d399", desc:"H C N O P S Si B Se Ge As Sb Te"},
  {key:"noble", name:"寂靜鈍氣聖殿", emoji:"❄️", color:"#c084fc", desc:"He Ne Ar Kr Xe Rn"},
  {key:"alkali", name:"烈焰鹼金部落", emoji:"🔥", color:"#f472b6", desc:"Li Na K Rb Cs"},
  {key:"alkaline", name:"磐石鹼土要塞", emoji:"🪨", color:"#fb923c", desc:"Be Mg Ca Sr Ba"},
  {key:"halogen", name:"利刃鹵素森林", emoji:"🗡️", color:"#a78bfa", desc:"F Cl Br I"},
- {key:"metal", name:"鋼鐵工匠之城", emoji:"⚒️", color:"#22d3ee", desc:"Fe Cu Zn Ag Au Hg Sn Pb Al W Ni Cr Ti Pt Co Mn"},
+ {key:"metal", name:"鋼鐵工匠之城", emoji:"⚒️", color:"#22d3ee", desc:"Fe Cu Zn Ag Au Hg Sn Pb Al W Ni Cr Ti Pt Co Mn Ga In Bi"},
+ {key:"lanth", name:"秘境鑭系谷", emoji:"🧲", color:"#2dd4bf", desc:"La Ce Nd"},
  {key:"boss", name:"禁忌放射王座", emoji:"☢️", color:"#f87171", desc:"U（終極王國，需集齊 3 件合成物解鎖）"}
 ];
 
