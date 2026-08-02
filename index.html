@@ -87,6 +87,7 @@
   .ov-cell.filled.cleared{outline:2px solid var(--gold);}
   .ov-cell.filled.selected{outline:2px solid #fff;}
   .ov-cell .ov-sym{font-size:.74rem;}
+  .ov-cell .ov-star{position:absolute;top:-3px;right:-3px;font-size:.55rem;filter:drop-shadow(0 0 1px #000);}
   .ov-spacer-row{grid-column:1/-1;height:8px;}
   .ov-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.7rem;color:var(--sub);margin:10px 0 16px;}
   .ov-legend span{display:inline-flex;align-items:center;gap:5px;}
@@ -159,6 +160,7 @@
             <div class="sym" id="cardSym">H</div>
             <div class="zh" id="cardZh">氫</div>
             <div class="catlabel" id="cardCat">非金屬</div>
+            <div class="small" id="cardExam" style="margin-top:6px;"></div>
           </div>
           <div class="face back">
             <div class="fact" id="cardFact"></div>
@@ -335,6 +337,9 @@ const PERIODIC_LAYOUT = [
 const LANTHANIDE_ROW = ["La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu"];
 const ACTINIDE_ROW = ["Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr"];
 
+/* 國中會考較常見／常考的元素（標⭐必考）；其餘為知識延伸，不特別標註 */
+const EXAM_LIKELY = new Set(["H","He","Li","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl","Ar","K","Ca","Fe","Cu","Zn","Br","Ag","Sn","I","Ba","W","Au","Hg","Pb","U"]);
+
 const ZONES = [
  {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", color:"#34d399", desc:"H C N O P S Si B Se Ge As Sb Te"},
  {key:"noble", name:"寂靜鈍氣聖殿", emoji:"❄️", color:"#c084fc", desc:"He Ne Ar Kr Xe Rn"},
@@ -466,8 +471,9 @@ function makeOvCell(sym, row){
   cell.className = "ov-cell filled" + (cleared?" cleared":"");
   cell.style.background = CAT_COLOR[e.cat] || "var(--panel2)";
   cell.style.color = "#0b1420";
-  cell.innerHTML = `<span class="ov-sym">${e.sym}</span>`;
-  cell.title = `${e.zh}（${e.cat}）`;
+  const star = EXAM_LIKELY.has(e.sym) ? `<span class="ov-star">⭐</span>` : "";
+  cell.innerHTML = `<span class="ov-sym">${e.sym}</span>${star}`;
+  cell.title = `${e.zh}（${e.cat}）` + (EXAM_LIKELY.has(e.sym) ? " ⭐國中會考常見" : "");
   cell.dataset.sym = e.sym;
   cell.addEventListener("click", ()=>showOvDetail(e, cell));
   return cell;
@@ -501,7 +507,8 @@ function renderOverview(){
 function renderOvLegend(){
   const legend = document.getElementById("ovLegend");
   legend.innerHTML = Object.keys(CAT_COLOR).map(cat=>`<span><i class="ov-dot" style="background:${CAT_COLOR[cat]}"></i>${cat}</span>`).join("")
-    + `<span>🏆 金框＝該王國已破關</span>`;
+    + `<span>🏆 金框＝該王國已破關</span>`
+    + `<span>⭐ 國中會考較常見／常考的元素</span>`;
 }
 function showOvDetail(e, cellEl){
   document.querySelectorAll(".ov-cell.selected").forEach(c=>c.classList.remove("selected"));
@@ -528,7 +535,7 @@ function showOvDetail(e, cellEl){
   detail.innerHTML = `
     <div class="ov-detail-emoji">${emoji}</div>
     <div class="ov-detail-body">
-      <div class="ov-detail-title"><span class="ov-detail-sym">${e.sym}</span><span class="ov-detail-zh">${e.zh}</span></div>
+      <div class="ov-detail-title"><span class="ov-detail-sym">${e.sym}</span><span class="ov-detail-zh">${e.zh}</span>${EXAM_LIKELY.has(e.sym)?'<span title="國中會考常見">⭐</span>':''}</div>
       ${actionHtml}
     </div>`;
   detail.classList.add("show");
@@ -559,6 +566,7 @@ function renderZones(){
     const known = zoneKnownCount(z.key);
     const cleared = !!state.zoneCleared[z.key];
     const unlocked = isZoneUnlocked(z.key);
+    const examCount = els.filter(e=>EXAM_LIKELY.has(e.sym)).length;
     const div = document.createElement("div");
     div.className = "zone-card" + (unlocked?"":" locked") + (cleared?" done":"");
     div.style.setProperty("--zc", z.color);
@@ -567,6 +575,7 @@ function renderZones(){
       <h3>${z.name}</h3>
       <p>${z.desc}</p>
       <p class="small">${unlocked? (known+"/"+els.length+" 已背熟"+(cleared?" · 已破關 🏆":"")) : "🔒 需先合成 "+BOSS_UNLOCK+" 樣物品解鎖"}</p>
+      ${examCount>0 ? `<p class="small">⭐ ${examCount} 個國中會考常見</p>` : ""}
       <div class="progress-mini"><i style="width:${els.length? (known/els.length*100):0}%;background:${z.color}"></i></div>
     `;
     if(unlocked) div.addEventListener("click", ()=>enterZone(z.key));
@@ -610,6 +619,7 @@ function showMemCard(){
     document.getElementById("cardSym").textContent = "";
     document.getElementById("cardZh").textContent = "本區已全部背熟！";
     document.getElementById("cardCat").textContent = "";
+    document.getElementById("cardExam").textContent = "";
     document.getElementById("memProgress").textContent = "前往合成台或王國試煉吧";
     return;
   }
@@ -619,6 +629,7 @@ function showMemCard(){
   document.getElementById("cardSym").textContent = e.sym;
   document.getElementById("cardZh").textContent = e.zh;
   document.getElementById("cardCat").textContent = e.cat;
+  document.getElementById("cardExam").textContent = EXAM_LIKELY.has(e.sym) ? "⭐ 國中會考較常見" : "";
   document.getElementById("cardFact").textContent = e.fact;
   document.getElementById("memProgress").textContent = `剩 ${memQueue.length} 張待熟悉（${e.zh} / ${e.sym}）`;
 }
