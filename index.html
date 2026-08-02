@@ -261,7 +261,22 @@ const ELEMENTS = [
  {sym:"Au",zh:"金",cat:"過渡金屬",zone:"metal",period:6,group:11,emoji:"🥇",fact:"化學性質極穩定，幾乎不與空氣、水反應，是「不會生鏽的金屬」，自古用於貨幣與飾品。"},
  {sym:"Hg",zh:"汞",cat:"過渡金屬",zone:"metal",period:6,group:12,emoji:"🌡️",fact:"常溫下唯一是液態的金屬（水銀）。舊式體溫計、血壓計曾使用，因有毒現多已禁用。"},
  {sym:"Pb",zh:"鉛",cat:"金屬",zone:"metal",period:6,group:14,emoji:"🚱",fact:"密度大、質軟。曾用於水管、油漆，因有毒性現已大幅減少使用，鉛中毒對神經系統有害。"},
- {sym:"U",zh:"鈾",cat:"放射性金屬",zone:"boss",period:7,group:3,emoji:"☢️",fact:"具放射性，核分裂可釋放巨大能量，是核能發電與核武器的原料，需嚴格管制使用。"}
+ {sym:"U",zh:"鈾",cat:"放射性金屬",zone:"boss",period:7,group:3,emoji:"☢️",fact:"具放射性，核分裂可釋放巨大能量，是核能發電與核武器的原料，需嚴格管制使用。"},
+ {sym:"B",zh:"硼",cat:"類金屬",zone:"nonmetal",period:2,group:13,emoji:"🧴",fact:"硼砂用於清潔劑與陶瓷上釉；硼酸曾用於眼藥水消毒，但濃度過高有毒性，現已少用。"},
+ {sym:"Se",zh:"硒",cat:"非金屬",zone:"nonmetal",period:4,group:16,emoji:"☀️",fact:"人體必需的微量元素，存在於堅果與海鮮中；也因為導電性會隨光線改變，用於太陽能電池與影印機感光鼓。"},
+ {sym:"Kr",zh:"氪",cat:"鈍氣",zone:"noble",period:4,group:18,emoji:"💡",fact:"用於某些省電螢光燈與攝影閃光燈。超人的家鄉「氪星」(Krypton)就是借用這個元素的英文名。"},
+ {sym:"Xe",zh:"氙",cat:"鈍氣",zone:"noble",period:5,group:18,emoji:"🚗",fact:"用於高亮度的「氙氣大燈」（HID車燈）與攝影棚閃光燈，發出接近日光的白光。"},
+ {sym:"Rn",zh:"氡",cat:"鈍氣",zone:"noble",period:6,group:18,emoji:"☢️",fact:"具放射性的氣體，可能從土壤或岩石中逸散進入室內，長期吸入有致癌風險，所以房屋需要保持通風。"},
+ {sym:"Rb",zh:"銣",cat:"鹼金屬",zone:"alkali",period:5,group:1,emoji:"⏰",fact:"活性比鉀更強，遇空氣就可能自燃，常用於精密的原子鐘與煙火中的紫色火焰。"},
+ {sym:"Cs",zh:"銫",cat:"鹼金屬",zone:"alkali",period:6,group:1,emoji:"⏱️",fact:"鹼金屬中活性最強的穩定元素之一。「銫原子鐘」是目前世界最精準的計時標準，1秒的定義就是根據銫-133原子振動。"},
+ {sym:"Be",zh:"鈹",cat:"鹼土金屬",zone:"alkaline",period:2,group:2,emoji:"✈️",fact:"質輕又硬，用於航太結構與X光機的窗口材料，但加工時粉塵具毒性，需小心處理。"},
+ {sym:"Sr",zh:"鍶",cat:"鹼土金屬",zone:"alkaline",period:5,group:2,emoji:"🎆",fact:"燃燒時會發出鮮豔的紅色火焰，是煙火中紅色的主要來源。"},
+ {sym:"Ni",zh:"鎳",cat:"過渡金屬",zone:"metal",period:4,group:10,emoji:"🪙",fact:"常與鉻混合製成不鏽鋼，也是許多硬幣的材料之一，部分人接觸鎳會有過敏反應。"},
+ {sym:"Cr",zh:"鉻",cat:"過渡金屬",zone:"metal",period:4,group:6,emoji:"🚿",fact:"鍍鉻能讓金屬表面光亮防鏽，浴室水龍頭常見鍍鉻處理，也是不鏽鋼「不生鏽」的關鍵成分。"},
+ {sym:"Ti",zh:"鈦",cat:"過渡金屬",zone:"metal",period:4,group:4,emoji:"🦴",fact:"質輕、堅固又抗腐蝕，常用於飛機機身、眼鏡框與人工關節等需要耐用又輕巧的場合。"},
+ {sym:"Pt",zh:"鉑",cat:"過渡金屬",zone:"metal",period:6,group:10,emoji:"🚙",fact:"化學性質非常穩定的貴金屬，是汽車「觸媒轉化器」的核心材料，能把廢氣中的有害物質轉成無害氣體。"},
+ {sym:"Co",zh:"鈷",cat:"過渡金屬",zone:"metal",period:4,group:9,emoji:"🔋",fact:"鋰電池正極材料的重要成分，也用於燒製藍色玻璃與陶瓷顏料，也就是「鈷藍色」的由來。"},
+ {sym:"Mn",zh:"錳",cat:"過渡金屬",zone:"metal",period:4,group:7,emoji:"🔋",fact:"常用於製造乾電池的正極與合金鋼，能大幅增加鋼鐵的硬度與耐磨性。"}
 ];
 
 const CAT_COLOR = {
@@ -311,26 +326,50 @@ const LANTHANIDE_ROW = ["La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","
 const ACTINIDE_ROW = ["Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr"];
 
 const ZONES = [
- {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", color:"#34d399", desc:"H C N O P S Si"},
- {key:"noble", name:"寂靜鈍氣聖殿", emoji:"❄️", color:"#c084fc", desc:"He Ne Ar"},
- {key:"alkali", name:"烈焰鹼金部落", emoji:"🔥", color:"#f472b6", desc:"Li Na K"},
- {key:"alkaline", name:"磐石鹼土要塞", emoji:"🪨", color:"#fb923c", desc:"Mg Ca Ba"},
+ {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", color:"#34d399", desc:"H C N O P S Si B Se"},
+ {key:"noble", name:"寂靜鈍氣聖殿", emoji:"❄️", color:"#c084fc", desc:"He Ne Ar Kr Xe Rn"},
+ {key:"alkali", name:"烈焰鹼金部落", emoji:"🔥", color:"#f472b6", desc:"Li Na K Rb Cs"},
+ {key:"alkaline", name:"磐石鹼土要塞", emoji:"🪨", color:"#fb923c", desc:"Be Mg Ca Sr Ba"},
  {key:"halogen", name:"利刃鹵素森林", emoji:"🗡️", color:"#a78bfa", desc:"F Cl Br I"},
- {key:"metal", name:"鋼鐵工匠之城", emoji:"⚒️", color:"#22d3ee", desc:"Fe Cu Zn Ag Au Hg Sn Pb Al W"},
+ {key:"metal", name:"鋼鐵工匠之城", emoji:"⚒️", color:"#22d3ee", desc:"Fe Cu Zn Ag Au Hg Sn Pb Al W Ni Cr Ti Pt Co Mn"},
  {key:"boss", name:"禁忌放射王座", emoji:"☢️", color:"#f87171", desc:"U（終極王國，需集齊 3 件合成物解鎖）"}
 ];
 
 const RECIPES = [
- {r:["H","O"], product:"H₂O", name:"水", eq:"2H₂ + O₂ → 2H₂O"},
- {r:["C","O"], product:"CO₂", name:"二氧化碳", eq:"C + O₂ → CO₂"},
- {r:["Mg","O"], product:"MgO", name:"氧化鎂（刺眼白光）", eq:"2Mg + O₂ → 2MgO"},
- {r:["Fe","S"], product:"FeS", name:"硫化亞鐵", eq:"Fe + S → FeS"},
- {r:["Na","Cl"], product:"NaCl", name:"食鹽", eq:"2Na + Cl₂ → 2NaCl"},
- {r:["Zn","H"], product:"ZnCl₂+H₂", name:"氫氣（鋅加鹽酸）", eq:"Zn + 2HCl → ZnCl₂ + H₂"},
- {r:["Cu","S"], product:"CuS", name:"硫化銅", eq:"Cu + S → CuS"},
- {r:["Fe","O"], product:"Fe₂O₃", name:"氧化鐵（鐵鏽）", eq:"4Fe + 3O₂ → 2Fe₂O₃"},
- {r:["Ag","S"], product:"Ag₂S", name:"硫化銀（銀變黑）", eq:"2Ag + S → Ag₂S"},
- {r:["Al","O"], product:"Al₂O₃", name:"氧化鋁", eq:"4Al + 3O₂ → 2Al₂O₃"}
+ {r:["H","O"], product:"H₂O", name:"水", eq:"2H₂ + O₂ → 2H₂O", emoji:"💧", rare:false},
+ {r:["C","O"], product:"CO₂", name:"二氧化碳", eq:"C + O₂ → CO₂", emoji:"🌬️", rare:false},
+ {r:["Mg","O"], product:"MgO", name:"氧化鎂（刺眼白光）", eq:"2Mg + O₂ → 2MgO", emoji:"✨", rare:false},
+ {r:["Fe","S"], product:"FeS", name:"硫化亞鐵", eq:"Fe + S → FeS", emoji:"⚙️", rare:false},
+ {r:["Na","Cl"], product:"NaCl", name:"食鹽", eq:"2Na + Cl₂ → 2NaCl", emoji:"🧂", rare:false},
+ {r:["Zn","H"], product:"ZnCl₂+H₂", name:"氫氣（鋅加鹽酸）", eq:"Zn + 2HCl → ZnCl₂ + H₂", emoji:"💨", rare:false},
+ {r:["Cu","S"], product:"CuS", name:"硫化銅", eq:"Cu + S → CuS", emoji:"🔌", rare:false},
+ {r:["Fe","O"], product:"Fe₂O₃", name:"氧化鐵（鐵鏽）", eq:"4Fe + 3O₂ → 2Fe₂O₃", emoji:"🟤", rare:false},
+ {r:["Ag","S"], product:"Ag₂S", name:"硫化銀（銀變黑）", eq:"2Ag + S → Ag₂S", emoji:"🥈", rare:true},
+ {r:["Al","O"], product:"Al₂O₃", name:"氧化鋁", eq:"4Al + 3O₂ → 2Al₂O₃", emoji:"🥫", rare:false},
+ {r:["K","Cl"], product:"KCl", name:"氯化鉀", eq:"2K + Cl₂ → 2KCl", emoji:"🌱", rare:false},
+ {r:["Ca","O"], product:"CaO", name:"生石灰", eq:"2Ca + O₂ → 2CaO", emoji:"🦴", rare:false},
+ {r:["Ba","O"], product:"BaO", name:"氧化鋇", eq:"2Ba + O₂ → 2BaO", emoji:"🩻", rare:true},
+ {r:["Al","Cl"], product:"AlCl₃", name:"氯化鋁", eq:"2Al + 3Cl₂ → 2AlCl₃", emoji:"🥫", rare:false},
+ {r:["Sn","O"], product:"SnO₂", name:"氧化錫", eq:"Sn + O₂ → SnO₂", emoji:"🔧", rare:false},
+ {r:["Pb","S"], product:"PbS", name:"硫化鉛（方鉛礦）", eq:"Pb + S → PbS", emoji:"🚱", rare:true},
+ {r:["Hg","S"], product:"HgS", name:"硫化汞（硃砂）", eq:"Hg + S → HgS", emoji:"🌡️", rare:true},
+ {r:["Cu","O"], product:"CuO", name:"氧化銅", eq:"2Cu + O₂ → 2CuO", emoji:"🔌", rare:false},
+ {r:["Zn","O"], product:"ZnO", name:"氧化鋅", eq:"2Zn + O₂ → 2ZnO", emoji:"🛠️", rare:false},
+ {r:["Na","O"], product:"Na₂O", name:"氧化鈉", eq:"4Na + O₂ → 2Na₂O", emoji:"🧂", rare:false},
+ {r:["K","O"], product:"K₂O", name:"氧化鉀", eq:"4K + O₂ → 2K₂O", emoji:"🌱", rare:false},
+ {r:["H","Cl"], product:"HCl", name:"氯化氫（鹽酸原料）", eq:"H₂ + Cl₂ → 2HCl", emoji:"🧪", rare:false},
+ {r:["H","N"], product:"NH₃", name:"氨（阿摩尼亞）", eq:"N₂ + 3H₂ → 2NH₃", emoji:"💨", rare:true},
+ {r:["Si","O"], product:"SiO₂", name:"二氧化矽（玻璃原料）", eq:"Si + O₂ → SiO₂", emoji:"💻", rare:false},
+ {r:["P","O"], product:"P₂O₅", name:"五氧化二磷", eq:"4P + 5O₂ → 2P₂O₅", emoji:"🔥", rare:false},
+ {r:["S","O"], product:"SO₂", name:"二氧化硫", eq:"S + O₂ → SO₂", emoji:"🌋", rare:false},
+ {r:["Ca","Cl"], product:"CaCl₂", name:"氯化鈣（除濕劑）", eq:"Ca + Cl₂ → CaCl₂", emoji:"🦴", rare:false},
+ {r:["Mg","Cl"], product:"MgCl₂", name:"氯化鎂", eq:"Mg + Cl₂ → MgCl₂", emoji:"✨", rare:false},
+ {r:["Ti","O"], product:"TiO₂", name:"二氧化鈦（白色顏料）", eq:"Ti + O₂ → TiO₂", emoji:"🎨", rare:false},
+ {r:["Cr","O"], product:"Cr₂O₃", name:"氧化鉻（綠色顏料）", eq:"4Cr + 3O₂ → 2Cr₂O₃", emoji:"🎨", rare:true},
+ {r:["Ni","O"], product:"NiO", name:"氧化鎳", eq:"2Ni + O₂ → 2NiO", emoji:"🪙", rare:false},
+ {r:["Co","Cl"], product:"CoCl₂", name:"氯化鈷（濕度指示劑，遇濕變粉紅）", eq:"Co + Cl₂ → CoCl₂", emoji:"🔋", rare:true},
+ {r:["Sr","O"], product:"SrO", name:"氧化鍶", eq:"2Sr + O₂ → 2SrO", emoji:"🎆", rare:false},
+ {r:["Mn","O"], product:"MnO₂", name:"二氧化錳（乾電池原料）", eq:"Mn + O₂ → MnO₂", emoji:"🔋", rare:false}
 ];
 
 const BOSS_UNLOCK = 3; // 需合成幾樣才能挑戰終極王國
@@ -702,10 +741,46 @@ function nextBattleQuestion(){
   const r = Math.random();
   const madeRecipes = RECIPES.filter(rc => rc.r.every(s=>state.known[s]));
   let qtype = "symbol";
-  if(r < 0.2 && pool.length>=3) qtype = "oddOne";
-  else if(r < 0.35 && madeRecipes.length>0) qtype = "equation";
+  if(r < 0.15 && pool.length>=3) qtype = "oddOne";
+  else if(r < 0.30 && madeRecipes.length>0) qtype = "equation";
+  else if(r < 0.50) qtype = "reverseSymbol";
+  else if(r < 0.68) qtype = "category";
 
   battle.qtype = qtype;
+
+  if(qtype==="reverseSymbol"){
+    // 反過來：給中文名，選正確符號（避免只認得單向配對）
+    const e = pickWeighted(pool);
+    battle.current = e;
+    const others = ELEMENTS.filter(x=>x.sym!==e.sym);
+    const opts = [e.sym];
+    while(opts.length<4 && others.length>0){
+      const pick = others.splice(Math.floor(Math.random()*others.length),1)[0];
+      if(!opts.includes(pick.sym)) opts.push(pick.sym);
+    }
+    opts.sort(()=>Math.random()-0.5);
+    battle.opts = opts;
+    battle.answer = e.sym;
+    battle.qtext = `「${e.zh}」的元素符號是？`;
+    battle.errType = "symbol";
+    return;
+  }
+  if(qtype==="category"){
+    // 分類辨識：這個元素屬於哪一族
+    const e = pickWeighted(pool);
+    battle.current = e;
+    const allCats = Object.keys(CAT_COLOR).filter(c=>c!=="人工合成" && c!=="鑭系" && c!=="錒系");
+    const others = allCats.filter(c=>c!==e.cat);
+    const opts = [e.cat];
+    const shuffledCats = others.slice().sort(()=>Math.random()-0.5);
+    while(opts.length<4 && shuffledCats.length>0) opts.push(shuffledCats.pop());
+    opts.sort(()=>Math.random()-0.5);
+    battle.opts = opts;
+    battle.answer = e.cat;
+    battle.qtext = `${e.sym}（${e.zh}）屬於哪一個分類？`;
+    battle.errType = "category";
+    return;
+  }
 
   if(qtype==="oddOne"){
     // 跨元素比較：同區3個 + 其他區1個，找出「性質最不同」的那一個
@@ -763,7 +838,7 @@ function nextBattleQuestion(){
   battle.qtype = "symbol";
 }
 
-const QTYPE_LABEL = {symbol:"🔎 辨識", oddOne:"🧩 跨元素比較", equation:"🐛 找碴"};
+const QTYPE_LABEL = {symbol:"🔎 辨識", reverseSymbol:"🔁 反向辨識", category:"🏷️ 分類", oddOne:"🧩 跨元素比較", equation:"🐛 找碴"};
 
 function renderBattle(){
   const z = ZONES.find(z=>z.key===battle.zone);
