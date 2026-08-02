@@ -23,10 +23,11 @@
   nav.tabs button:disabled{opacity:.35;cursor:not-allowed;}
   section{display:none;}
   section.active{display:block;}
-  .zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
-  .zone-card{background:var(--panel);border-radius:14px;padding:14px;cursor:pointer;border:2px solid transparent;position:relative;}
+  .zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;}
+  .zone-card{background:var(--panel);border-radius:14px;padding:14px;cursor:pointer;border:2px solid transparent;border-left:6px solid var(--zc,var(--sub));position:relative;}
   .zone-card.locked{opacity:.4;cursor:not-allowed;}
-  .zone-card.done{border-color:var(--accent);}
+  .zone-card.done{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+  .zone-card .zc-emoji{font-size:2rem;display:block;margin-bottom:4px;}
   .zone-card h3{margin:0 0 4px;font-size:1.05rem;}
   .zone-card p{margin:0;font-size:.75rem;color:var(--sub);}
   .progress-mini{height:5px;background:#0009;border-radius:5px;margin-top:8px;overflow:hidden;}
@@ -36,11 +37,12 @@
   .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;}
   .flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
   .face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:18px;padding:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
-  .face.front{background:linear-gradient(160deg,var(--card),#1c2938);border:2px solid var(--accent2);}
-  .face.back{background:linear-gradient(160deg,#1c2938,var(--card));border:2px solid var(--gold);transform:rotateY(180deg);overflow-y:auto;}
-  .sym{font-size:3.2rem;font-weight:900;color:var(--accent);}
+  .face.front{background:linear-gradient(160deg,var(--card),#1c2938);border:3px solid var(--fc,var(--accent2));}
+  .face.back{background:linear-gradient(160deg,#1c2938,var(--card));border:3px solid var(--gold);transform:rotateY(180deg);overflow-y:auto;}
+  .card-emoji{font-size:2.8rem;margin-bottom:2px;}
+  .sym{font-size:2.6rem;font-weight:900;color:var(--fc,var(--accent));}
   .zh{font-size:1.3rem;margin-top:4px;color:var(--ink);}
-  .catlabel{font-size:.7rem;color:var(--sub);margin-top:8px;}
+  .catlabel{display:inline-block;font-size:.68rem;color:#0b1420;margin-top:8px;padding:2px 10px;border-radius:8px;background:var(--fc,var(--sub));font-weight:bold;}
   .fact{font-size:.85rem;line-height:1.5;text-align:left;}
   .btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
   button.action{background:var(--accent2);color:#04211c;border:none;padding:10px 18px;border-radius:10px;font-weight:bold;cursor:pointer;}
@@ -62,12 +64,12 @@
   .recipe-list{display:grid;gap:8px;}
   .recipe-item{background:var(--panel);border-radius:10px;padding:10px 14px;font-size:.85rem;display:flex;justify-content:space-between;align-items:center;}
   .recipe-item.made{color:var(--accent);}
-  .battle-box{background:var(--panel);border-radius:14px;padding:18px;text-align:center;}
+  .battle-box{background:var(--panel);border-radius:14px;padding:18px;text-align:center;border-top:4px solid var(--zc,var(--accent2));}
   .hp-row{display:flex;justify-content:space-between;margin-bottom:14px;font-size:.85rem;gap:10px;}
   .hp-bar{height:10px;border-radius:6px;background:#0006;overflow:hidden;margin-top:4px;}
-  .hp-bar i{display:block;height:100%;background:var(--danger);transition:width .3s;}
+  .hp-bar i{display:block;height:100%;background:var(--zc,var(--danger));transition:width .3s;}
   .hp-bar.player i{background:var(--accent);}
-  .enemy-emoji{font-size:4rem;margin:10px 0;}
+  .enemy-emoji{font-size:3rem;margin:10px auto;width:84px;height:84px;border-radius:50%;background:var(--zc,var(--panel2));display:flex;align-items:center;justify-content:center;}
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#04211c;padding:10px 20px;border-radius:10px;font-weight:bold;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50;max-width:90vw;text-align:center;}
   .toast.show{opacity:1;}
   .toast.rare{background:var(--gold);}
@@ -153,6 +155,7 @@
       <div class="flashcard" id="flashcard">
         <div class="flashcard-inner">
           <div class="face front">
+            <div class="card-emoji" id="cardEmoji">💧</div>
             <div class="sym" id="cardSym">H</div>
             <div class="zh" id="cardZh">氫</div>
             <div class="catlabel" id="cardCat">非金屬</div>
@@ -308,13 +311,13 @@ const LANTHANIDE_ROW = ["La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","
 const ACTINIDE_ROW = ["Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr"];
 
 const ZONES = [
- {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", desc:"H C N O P S Si"},
- {key:"noble", name:"寂靜鈍氣聖殿", emoji:"❄️", desc:"He Ne Ar"},
- {key:"alkali", name:"烈焰鹼金部落", emoji:"🔥", desc:"Li Na K"},
- {key:"alkaline", name:"磐石鹼土要塞", emoji:"🪨", desc:"Mg Ca Ba"},
- {key:"halogen", name:"利刃鹵素森林", emoji:"🗡️", desc:"F Cl Br I"},
- {key:"metal", name:"鋼鐵工匠之城", emoji:"⚒️", desc:"Fe Cu Zn Ag Au Hg Sn Pb Al W"},
- {key:"boss", name:"禁忌放射王座", emoji:"☢️", desc:"U（終極王國，需集齊 3 件合成物解鎖）"}
+ {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", color:"#34d399", desc:"H C N O P S Si"},
+ {key:"noble", name:"寂靜鈍氣聖殿", emoji:"❄️", color:"#c084fc", desc:"He Ne Ar"},
+ {key:"alkali", name:"烈焰鹼金部落", emoji:"🔥", color:"#f472b6", desc:"Li Na K"},
+ {key:"alkaline", name:"磐石鹼土要塞", emoji:"🪨", color:"#fb923c", desc:"Mg Ca Ba"},
+ {key:"halogen", name:"利刃鹵素森林", emoji:"🗡️", color:"#a78bfa", desc:"F Cl Br I"},
+ {key:"metal", name:"鋼鐵工匠之城", emoji:"⚒️", color:"#22d3ee", desc:"Fe Cu Zn Ag Au Hg Sn Pb Al W"},
+ {key:"boss", name:"禁忌放射王座", emoji:"☢️", color:"#f87171", desc:"U（終極王國，需集齊 3 件合成物解鎖）"}
 ];
 
 const RECIPES = [
@@ -498,11 +501,13 @@ function renderZones(){
     const unlocked = isZoneUnlocked(z.key);
     const div = document.createElement("div");
     div.className = "zone-card" + (unlocked?"":" locked") + (cleared?" done":"");
+    div.style.setProperty("--zc", z.color);
     div.innerHTML = `
-      <h3>${z.emoji} ${z.name}</h3>
+      <span class="zc-emoji">${z.emoji}</span>
+      <h3>${z.name}</h3>
       <p>${z.desc}</p>
       <p class="small">${unlocked? (known+"/"+els.length+" 已背熟"+(cleared?" · 已破關 🏆":"")) : "🔒 需先合成 "+BOSS_UNLOCK+" 樣物品解鎖"}</p>
-      <div class="progress-mini"><i style="width:${els.length? (known/els.length*100):0}%"></i></div>
+      <div class="progress-mini"><i style="width:${els.length? (known/els.length*100):0}%;background:${z.color}"></i></div>
     `;
     if(unlocked) div.addEventListener("click", ()=>enterZone(z.key));
     grid.appendChild(div);
@@ -540,13 +545,17 @@ function showMemCard(){
   const card = document.getElementById("flashcard");
   card.classList.remove("flipped");
   if(memQueue.length===0){
-    document.getElementById("cardSym").textContent = "🎉";
+    card.style.setProperty("--fc", "var(--accent)");
+    document.getElementById("cardEmoji").textContent = "🎉";
+    document.getElementById("cardSym").textContent = "";
     document.getElementById("cardZh").textContent = "本區已全部背熟！";
     document.getElementById("cardCat").textContent = "";
     document.getElementById("memProgress").textContent = "前往合成台或王國試煉吧";
     return;
   }
   const e = memQueue[memIdx % memQueue.length];
+  card.style.setProperty("--fc", CAT_COLOR[e.cat] || "var(--accent)");
+  document.getElementById("cardEmoji").textContent = e.emoji;
   document.getElementById("cardSym").textContent = e.sym;
   document.getElementById("cardZh").textContent = e.zh;
   document.getElementById("cardCat").textContent = e.cat;
@@ -641,6 +650,8 @@ function bumpErrorType(sym, type){
 }
 
 function showDiffScreen(){
+  const z = ZONES.find(zz=>zz.key===currentZone);
+  document.getElementById("diffScreen").style.setProperty("--zc", z.color);
   document.getElementById("diffScreen").style.display = "block";
   document.getElementById("battleScreen").style.display = "none";
   const wrap = document.getElementById("diffWrap");
@@ -756,6 +767,7 @@ const QTYPE_LABEL = {symbol:"🔎 辨識", oddOne:"🧩 跨元素比較", equati
 
 function renderBattle(){
   const z = ZONES.find(z=>z.key===battle.zone);
+  document.getElementById("battleScreen").style.setProperty("--zc", z.color);
   document.getElementById("enemyName").textContent = z.name + " 的元素之靈";
   document.getElementById("enemyEmoji").textContent = z.emoji;
   document.getElementById("playerHpBar").style.width = Math.max(0,battle.playerHp)+"%";
