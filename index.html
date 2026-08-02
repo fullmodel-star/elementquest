@@ -132,7 +132,7 @@
   <section id="tab-overview" class="active">
     <div class="ov-hint">
       這就是完整的<b>元素週期表</b>，總共 118 個元素！<b>橫排</b>叫「週期」、<b>直排</b>叫「族」——同一直排的元素個性很像，所以我們把它們分成 7 個王國，先攻略其中 31 個國中常見的元素。
-      有顏色的格子點下去可以看詳細介紹；灰色格子是之後才會學到的元素，先賣個關子。破關越多王國，該區塊就會鑲上金框！
+      每個格子都可以點下去看介紹；其中 31 個亮眼的元素會列入「王國試煉」教學範圍，其餘的先認識一下，之後有機會慢慢收服！破關越多王國，該區塊就會鑲上金框。
     </div>
     <div class="ov-wrap"><div class="ov-grid" id="ovGrid"></div></div>
     <div class="ov-legend" id="ovLegend"></div>
@@ -263,8 +263,36 @@ const ELEMENTS = [
 
 const CAT_COLOR = {
   "非金屬":"#34d399", "鈍氣":"#c084fc", "鹼金屬":"#f472b6", "鹼土金屬":"#fb923c",
-  "類金屬":"#4ade80", "鹵素":"#a78bfa", "過渡金屬":"#22d3ee", "金屬":"#60a5fa", "放射性金屬":"#f87171"
+  "類金屬":"#4ade80", "鹵素":"#a78bfa", "過渡金屬":"#22d3ee", "金屬":"#60a5fa", "放射性金屬":"#f87171",
+  "鑭系":"#2dd4bf", "錒系":"#fb7185", "人工合成":"#94a3b8"
 };
+const CATEGORY_INFO = {
+  "鹼金屬":{emoji:"🌊", fact:"鹼金屬，最外層只有1個電子，很容易失去形成+1價離子，遇水反應劇烈。"},
+  "鹼土金屬":{emoji:"🪨", fact:"鹼土金屬，最外層有2個電子，性質比鹼金屬穩定一些，常見於礦物與骨骼中。"},
+  "過渡金屬":{emoji:"⚙️", fact:"過渡金屬，通常硬度高、導電導熱佳，是製造合金與工業器具的重要材料。"},
+  "金屬":{emoji:"🔩", fact:"金屬元素，具有金屬光澤與延展性，常用於日常器具與工業製品。"},
+  "類金屬":{emoji:"🔬", fact:"類金屬，介於金屬與非金屬之間，常用於半導體與電子材料。"},
+  "非金屬":{emoji:"🧬", fact:"非金屬元素，通常不具金屬光澤，在生物與化學反應中扮演重要角色。"},
+  "鹵素":{emoji:"🧪", fact:"鹵素，化學性質活潑，容易與金屬反應形成鹽類化合物。"},
+  "鈍氣":{emoji:"💫", fact:"鈍氣（惰性氣體），化學性質非常穩定，很少與其他元素發生反應。"},
+  "鑭系":{emoji:"🧲", fact:"鑭系元素，彼此性質相近，常用於磁鐵、螢光材料與高科技產品。"},
+  "錒系":{emoji:"☢️", fact:"錒系元素，多半具放射性，部分用於核能發電，需嚴格管制使用。"},
+  "人工合成":{emoji:"🧫", fact:"人工合成元素，只能在實驗室用粒子加速器製造出極少量，極不穩定，瞬間就會衰變。"},
+  "放射性金屬":{emoji:"☢️", fact:"具放射性的金屬元素，需嚴格管制使用。"}
+};
+/* 全部118個元素的中文名與分類（僅供全貌總覽查看；只有下方 ELEMENTS 裡的31個是遊戲實際教學範圍） */
+const FULL_ELEMENTS = [
+ {sym:"H",zh:"氫",cat:"非金屬"},{sym:"He",zh:"氦",cat:"鈍氣"},
+ {sym:"Li",zh:"鋰",cat:"鹼金屬"},{sym:"Be",zh:"鈹",cat:"鹼土金屬"},{sym:"B",zh:"硼",cat:"類金屬"},{sym:"C",zh:"碳",cat:"非金屬"},{sym:"N",zh:"氮",cat:"非金屬"},{sym:"O",zh:"氧",cat:"非金屬"},{sym:"F",zh:"氟",cat:"鹵素"},{sym:"Ne",zh:"氖",cat:"鈍氣"},
+ {sym:"Na",zh:"鈉",cat:"鹼金屬"},{sym:"Mg",zh:"鎂",cat:"鹼土金屬"},{sym:"Al",zh:"鋁",cat:"金屬"},{sym:"Si",zh:"矽",cat:"類金屬"},{sym:"P",zh:"磷",cat:"非金屬"},{sym:"S",zh:"硫",cat:"非金屬"},{sym:"Cl",zh:"氯",cat:"鹵素"},{sym:"Ar",zh:"氬",cat:"鈍氣"},
+ {sym:"K",zh:"鉀",cat:"鹼金屬"},{sym:"Ca",zh:"鈣",cat:"鹼土金屬"},{sym:"Sc",zh:"鈧",cat:"過渡金屬"},{sym:"Ti",zh:"鈦",cat:"過渡金屬"},{sym:"V",zh:"釩",cat:"過渡金屬"},{sym:"Cr",zh:"鉻",cat:"過渡金屬"},{sym:"Mn",zh:"錳",cat:"過渡金屬"},{sym:"Fe",zh:"鐵",cat:"過渡金屬"},{sym:"Co",zh:"鈷",cat:"過渡金屬"},{sym:"Ni",zh:"鎳",cat:"過渡金屬"},{sym:"Cu",zh:"銅",cat:"過渡金屬"},{sym:"Zn",zh:"鋅",cat:"過渡金屬"},{sym:"Ga",zh:"鎵",cat:"金屬"},{sym:"Ge",zh:"鍺",cat:"類金屬"},{sym:"As",zh:"砷",cat:"類金屬"},{sym:"Se",zh:"硒",cat:"非金屬"},{sym:"Br",zh:"溴",cat:"鹵素"},{sym:"Kr",zh:"氪",cat:"鈍氣"},
+ {sym:"Rb",zh:"銣",cat:"鹼金屬"},{sym:"Sr",zh:"鍶",cat:"鹼土金屬"},{sym:"Y",zh:"釔",cat:"過渡金屬"},{sym:"Zr",zh:"鋯",cat:"過渡金屬"},{sym:"Nb",zh:"鈮",cat:"過渡金屬"},{sym:"Mo",zh:"鉬",cat:"過渡金屬"},{sym:"Tc",zh:"鎝",cat:"過渡金屬"},{sym:"Ru",zh:"釕",cat:"過渡金屬"},{sym:"Rh",zh:"銠",cat:"過渡金屬"},{sym:"Pd",zh:"鈀",cat:"過渡金屬"},{sym:"Ag",zh:"銀",cat:"過渡金屬"},{sym:"Cd",zh:"鎘",cat:"過渡金屬"},{sym:"In",zh:"銦",cat:"金屬"},{sym:"Sn",zh:"錫",cat:"金屬"},{sym:"Sb",zh:"銻",cat:"類金屬"},{sym:"Te",zh:"碲",cat:"類金屬"},{sym:"I",zh:"碘",cat:"鹵素"},{sym:"Xe",zh:"氙",cat:"鈍氣"},
+ {sym:"Cs",zh:"銫",cat:"鹼金屬"},{sym:"Ba",zh:"鋇",cat:"鹼土金屬"},{sym:"Hf",zh:"鉿",cat:"過渡金屬"},{sym:"Ta",zh:"鉭",cat:"過渡金屬"},{sym:"W",zh:"鎢",cat:"過渡金屬"},{sym:"Re",zh:"錸",cat:"過渡金屬"},{sym:"Os",zh:"鋨",cat:"過渡金屬"},{sym:"Ir",zh:"銥",cat:"過渡金屬"},{sym:"Pt",zh:"鉑",cat:"過渡金屬"},{sym:"Au",zh:"金",cat:"過渡金屬"},{sym:"Hg",zh:"汞",cat:"過渡金屬"},{sym:"Tl",zh:"鉈",cat:"金屬"},{sym:"Pb",zh:"鉛",cat:"金屬"},{sym:"Bi",zh:"鉍",cat:"金屬"},{sym:"Po",zh:"釙",cat:"類金屬"},{sym:"At",zh:"砈",cat:"鹵素"},{sym:"Rn",zh:"氡",cat:"鈍氣"},
+ {sym:"Fr",zh:"鍅",cat:"鹼金屬"},{sym:"Ra",zh:"鐳",cat:"鹼土金屬"},
+ {sym:"Rf",zh:"Rf",cat:"人工合成"},{sym:"Db",zh:"Db",cat:"人工合成"},{sym:"Sg",zh:"Sg",cat:"人工合成"},{sym:"Bh",zh:"Bh",cat:"人工合成"},{sym:"Hs",zh:"Hs",cat:"人工合成"},{sym:"Mt",zh:"Mt",cat:"人工合成"},{sym:"Ds",zh:"Ds",cat:"人工合成"},{sym:"Rg",zh:"Rg",cat:"人工合成"},{sym:"Cn",zh:"Cn",cat:"人工合成"},{sym:"Nh",zh:"Nh",cat:"人工合成"},{sym:"Fl",zh:"Fl",cat:"人工合成"},{sym:"Mc",zh:"Mc",cat:"人工合成"},{sym:"Lv",zh:"Lv",cat:"人工合成"},{sym:"Ts",zh:"Ts",cat:"人工合成"},{sym:"Og",zh:"Og",cat:"人工合成"},
+ {sym:"La",zh:"鑭",cat:"鑭系"},{sym:"Ce",zh:"鈰",cat:"鑭系"},{sym:"Pr",zh:"鐠",cat:"鑭系"},{sym:"Nd",zh:"釹",cat:"鑭系"},{sym:"Pm",zh:"鉕",cat:"鑭系"},{sym:"Sm",zh:"釤",cat:"鑭系"},{sym:"Eu",zh:"銪",cat:"鑭系"},{sym:"Gd",zh:"釓",cat:"鑭系"},{sym:"Tb",zh:"鋱",cat:"鑭系"},{sym:"Dy",zh:"鏑",cat:"鑭系"},{sym:"Ho",zh:"鈥",cat:"鑭系"},{sym:"Er",zh:"鉺",cat:"鑭系"},{sym:"Tm",zh:"銩",cat:"鑭系"},{sym:"Yb",zh:"鐿",cat:"鑭系"},{sym:"Lu",zh:"鎦",cat:"鑭系"},
+ {sym:"Ac",zh:"錒",cat:"錒系"},{sym:"Th",zh:"釷",cat:"錒系"},{sym:"Pa",zh:"鏷",cat:"錒系"},{sym:"U",zh:"鈾",cat:"放射性金屬"},{sym:"Np",zh:"錼",cat:"錒系"},{sym:"Pu",zh:"鈽",cat:"錒系"},{sym:"Am",zh:"鋂",cat:"錒系"},{sym:"Cm",zh:"鋦",cat:"錒系"},{sym:"Bk",zh:"鉳",cat:"錒系"},{sym:"Cf",zh:"鉲",cat:"錒系"},{sym:"Es",zh:"鑀",cat:"錒系"},{sym:"Fm",zh:"鐨",cat:"錒系"},{sym:"Md",zh:"鍆",cat:"錒系"},{sym:"No",zh:"鍩",cat:"錒系"},{sym:"Lr",zh:"鐒",cat:"錒系"}
+];
 
 /* 完整週期表外形（118 格骨架，僅遊戲教到的 31 個有資料，其餘先賣關子） */
 const PERIODIC_LAYOUT = [
@@ -367,15 +395,11 @@ function makeOvCell(sym, row){
     cell.innerHTML = `<span class="ov-sym">${sym}</span>`;
     return cell;
   }
-  const e = ELEMENTS.find(x=>x.sym===sym);
-  if(!e){
-    cell.className = "ov-cell locked";
-    cell.innerHTML = `<span class="ov-sym">${sym}</span>`;
-    cell.title = "之後會學到這個元素";
-    cell.addEventListener("click", ()=>toast("🔒 這個元素之後才會教到，敬請期待！"));
-    return cell;
-  }
-  const cleared = !!state.zoneCleared[e.zone];
+  const taught = ELEMENTS.find(x=>x.sym===sym);
+  const full = FULL_ELEMENTS.find(x=>x.sym===sym);
+  const e = taught || full;
+  if(!e){ cell.className = "ov-cell empty"; return cell; }
+  const cleared = taught ? !!state.zoneCleared[taught.zone] : false;
   cell.className = "ov-cell filled" + (cleared?" cleared":"");
   cell.style.background = CAT_COLOR[e.cat] || "var(--panel2)";
   cell.style.color = "#0b1420";
@@ -413,31 +437,44 @@ function renderOverview(){
 }
 function renderOvLegend(){
   const legend = document.getElementById("ovLegend");
-  const items = Object.keys(CAT_COLOR).map(cat=>`<span><i class="ov-dot" style="background:${CAT_COLOR[cat]}"></i>${cat}</span>`).join("");
-  legend.innerHTML = items + `<span><i class="ov-dot" style="background:rgba(255,255,255,.08)"></i>之後才會學到</span>`;
+  legend.innerHTML = Object.keys(CAT_COLOR).map(cat=>`<span><i class="ov-dot" style="background:${CAT_COLOR[cat]}"></i>${cat}</span>`).join("")
+    + `<span>🏆 金框＝該王國已破關</span>`;
 }
 function showOvDetail(e, cellEl){
   document.querySelectorAll(".ov-cell.selected").forEach(c=>c.classList.remove("selected"));
   cellEl.classList.add("selected");
   const detail = document.getElementById("ovDetail");
-  const zoneName = ZONES.find(z=>z.key===e.zone).name;
-  const bullets = e.fact.split("。").map(s=>s.trim()).filter(Boolean).map(s=>`<li>${s}。</li>`).join("");
-  const known = !!state.known[e.sym];
-  detail.innerHTML = `
-    <div class="ov-detail-emoji">${e.emoji}</div>
-    <div class="ov-detail-body">
-      <div class="ov-detail-title"><span class="ov-detail-sym">${e.sym}</span><span class="ov-detail-zh">${e.zh}</span></div>
-      <span class="ov-detail-cat" style="background:${CAT_COLOR[e.cat]}">${e.cat}・${zoneName}</span>
+  const isTaught = ELEMENTS.some(x=>x.sym===e.sym) && e.zone;
+  const info = CATEGORY_INFO[e.cat] || {emoji:"🔬", fact:"元素資料整理中。"};
+  const emoji = e.emoji || info.emoji;
+  const fact = e.fact || info.fact;
+  const bullets = fact.split("。").map(s=>s.trim()).filter(Boolean).map(s=>`<li>${s}。</li>`).join("");
+  let actionHtml;
+  if(isTaught){
+    const zoneName = ZONES.find(z=>z.key===e.zone).name;
+    actionHtml = `<span class="ov-detail-cat" style="background:${CAT_COLOR[e.cat]}">${e.cat}・${zoneName}</span>
       <ul>${bullets}</ul>
       <div class="btn-row" style="justify-content:flex-start;margin-top:10px;">
-        <button class="action secondary" id="ovDetailGo">${known?"🗺️ 前往這個王國":"📖 去背這個元素"}</button>
-      </div>
+        <button class="action secondary" id="ovDetailGo">🗺️ 前往這個王國</button>
+      </div>`;
+  } else {
+    actionHtml = `<span class="ov-detail-cat" style="background:${CAT_COLOR[e.cat]}">${e.cat}</span>
+      <ul>${bullets}</ul>
+      <p class="small" style="margin-top:8px;">🔬 這個元素目前還不在王國試煉的教學範圍內，之後可能會加入喔！</p>`;
+  }
+  detail.innerHTML = `
+    <div class="ov-detail-emoji">${emoji}</div>
+    <div class="ov-detail-body">
+      <div class="ov-detail-title"><span class="ov-detail-sym">${e.sym}</span><span class="ov-detail-zh">${e.zh}</span></div>
+      ${actionHtml}
     </div>`;
   detail.classList.add("show");
-  document.getElementById("ovDetailGo").addEventListener("click", ()=>{
-    enterZone(e.zone);
-    switchTab("memorize");
-  });
+  if(isTaught){
+    document.getElementById("ovDetailGo").addEventListener("click", ()=>{
+      enterZone(e.zone);
+      switchTab("memorize");
+    });
+  }
   detail.scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 
