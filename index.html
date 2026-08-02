@@ -75,18 +75,31 @@
   .small{font-size:.75rem;color:var(--sub);}
   /* ---------- 週期表總覽 ---------- */
   .ov-wrap{overflow-x:auto;padding-bottom:6px;}
-  .ov-grid{display:grid;grid-template-columns:repeat(18,minmax(30px,1fr));grid-auto-rows:minmax(30px,34px);gap:3px;min-width:640px;}
-  .ov-cell{border-radius:5px;font-size:.62rem;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;cursor:default;}
-  .ov-cell.empty{background:rgba(255,255,255,.03);}
-  .ov-cell.filled{cursor:pointer;font-weight:bold;color:#04211c;background:var(--panel2);color:var(--sub);border:1px solid rgba(255,255,255,.15);}
-  .ov-cell.filled.known{background:var(--accent2);color:#04211c;}
-  .ov-cell.filled.cleared{background:var(--gold);color:#2a1c00;}
-  .ov-cell .ov-sym{font-size:.72rem;}
-  .ov-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.72rem;color:var(--sub);margin:10px 0 16px;}
+  .ov-grid{display:grid;grid-template-columns:repeat(18,minmax(32px,1fr));grid-auto-rows:minmax(32px,38px);gap:3px;min-width:700px;}
+  .ov-cell{border-radius:5px;font-size:.62rem;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;cursor:default;position:relative;}
+  .ov-cell.empty{visibility:hidden;}
+  .ov-cell.placeholder{background:rgba(255,255,255,.05);color:var(--sub);font-size:.55rem;opacity:.5;}
+  .ov-cell.locked{cursor:default;font-weight:bold;background:rgba(255,255,255,.05);color:var(--sub);border:1px solid rgba(255,255,255,.08);opacity:.55;}
+  .ov-cell.filled{cursor:pointer;font-weight:bold;border:1px solid rgba(255,255,255,.25);transition:.15s;}
+  .ov-cell.filled:hover{transform:scale(1.08);z-index:2;}
+  .ov-cell.filled.cleared{outline:2px solid var(--gold);}
+  .ov-cell.filled.selected{outline:2px solid #fff;}
+  .ov-cell .ov-sym{font-size:.74rem;}
+  .ov-spacer-row{grid-column:1/-1;height:8px;}
+  .ov-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.7rem;color:var(--sub);margin:10px 0 16px;}
   .ov-legend span{display:inline-flex;align-items:center;gap:5px;}
   .ov-dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
   .ov-hint{background:var(--panel);border-radius:12px;padding:14px;font-size:.85rem;line-height:1.6;margin-bottom:14px;}
   .ov-hint b{color:var(--gold);}
+  .ov-detail{background:var(--panel);border-radius:14px;padding:18px;margin-top:16px;display:none;}
+  .ov-detail.show{display:flex;gap:16px;flex-wrap:wrap;}
+  .ov-detail-emoji{font-size:3.5rem;width:90px;height:90px;flex-shrink:0;border-radius:14px;background:var(--panel2);display:flex;align-items:center;justify-content:center;}
+  .ov-detail-body{flex:1;min-width:200px;}
+  .ov-detail-title{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}
+  .ov-detail-sym{font-size:1.6rem;font-weight:900;color:var(--accent);}
+  .ov-detail-zh{font-size:1.2rem;}
+  .ov-detail-cat{display:inline-block;font-size:.68rem;padding:2px 8px;border-radius:8px;margin-bottom:8px;color:#04211c;font-weight:bold;}
+  .ov-detail ul{margin:0;padding-left:18px;font-size:.82rem;line-height:1.7;}
   /* ---------- 難度選擇 ---------- */
   .diff-wrap{display:grid;gap:10px;}
   .diff-card{background:var(--panel);border:2px solid transparent;border-radius:12px;padding:14px;cursor:pointer;text-align:left;}
@@ -118,16 +131,12 @@
 
   <section id="tab-overview" class="active">
     <div class="ov-hint">
-      這就是完整的<b>元素週期表</b>！<b>橫排</b>叫「週期」、<b>直排</b>叫「族」——同一直排的元素個性很像，所以我們把它們分成 7 個王國一起攻略。
-      現在只有少數格子亮著，其餘先賣個關子，等你破關越多王國，地圖會越來越亮！
+      這就是完整的<b>元素週期表</b>，總共 118 個元素！<b>橫排</b>叫「週期」、<b>直排</b>叫「族」——同一直排的元素個性很像，所以我們把它們分成 7 個王國，先攻略其中 31 個國中常見的元素。
+      有顏色的格子點下去可以看詳細介紹；灰色格子是之後才會學到的元素，先賣個關子。破關越多王國，該區塊就會鑲上金框！
     </div>
     <div class="ov-wrap"><div class="ov-grid" id="ovGrid"></div></div>
-    <div class="ov-legend">
-      <span><i class="ov-dot" style="background:rgba(255,255,255,.06)"></i>尚未出現的元素</span>
-      <span><i class="ov-dot" style="background:var(--panel2)"></i>本遊戲會教的元素（未收服）</span>
-      <span><i class="ov-dot" style="background:var(--accent2)"></i>已收服</span>
-      <span><i class="ov-dot" style="background:var(--gold)"></i>該王國已破關</span>
-    </div>
+    <div class="ov-legend" id="ovLegend"></div>
+    <div class="ov-detail" id="ovDetail"></div>
     <div style="text-align:center;">
       <button class="action" id="btnGoMap">🗺️ 前往地圖選王國</button>
     </div>
@@ -219,38 +228,56 @@
 <script>
 /* ---------- 資料：國中常見元素 + 分區 + 週期表座標 ---------- */
 const ELEMENTS = [
- {sym:"H",zh:"氫",cat:"非金屬",zone:"nonmetal",period:1,group:1,fact:"宇宙中最輕、最多的元素。燃燒後生成水：2H₂+O₂→2H₂O。液態氫可作火箭燃料，但需極低溫儲存。"},
- {sym:"He",zh:"氦",cat:"鈍氣",zone:"noble",period:1,group:18,fact:"第二輕元素，化學性質極穩定不易反應。用於填充氣球、飛船，吸入會讓聲音變尖（但有危險，勿輕易嘗試）。"},
- {sym:"Li",zh:"鋰",cat:"鹼金屬",zone:"alkali",period:2,group:1,fact:"最輕的金屬，質軟可用刀切。是鋰電池（手機、電動車）的核心元素，遇水會緩慢反應產生氫氣。"},
- {sym:"C",zh:"碳",cat:"非金屬",zone:"nonmetal",period:2,group:14,fact:"生命的基礎元素！鑽石與石墨都是純碳，只是原子排列方式不同。燃燒生成CO₂：C+O₂→CO₂。"},
- {sym:"N",zh:"氮",cat:"非金屬",zone:"nonmetal",period:2,group:15,fact:"空氣中含量最多的氣體（約78%），化學性質穩定。液態氮溫度極低，常用於急速冷凍食品或保存細胞。"},
- {sym:"O",zh:"氧",cat:"非金屬",zone:"nonmetal",period:2,group:16,fact:"生物呼吸必需的氣體，佔空氣約21%。也是助燃劑，能使物質燃燒得更旺。"},
- {sym:"F",zh:"氟",cat:"鹵素",zone:"halogen",period:2,group:17,fact:"化學性質最活潑的元素之一。牙膏中的「氟化物」能強化琺瑯質、預防蛀牙。"},
- {sym:"Ne",zh:"氖",cat:"鈍氣",zone:"noble",period:2,group:18,fact:"通電時發出鮮豔橘紅光，是「霓虹燈」(neon)名稱的由來，常用於招牌燈管。"},
- {sym:"Na",zh:"鈉",cat:"鹼金屬",zone:"alkali",period:3,group:1,fact:"活性極大，丟進水裡會劇烈反應甚至起火：2Na+2H₂O→2NaOH+H₂。與氯氣反應生成我們每天吃的食鹽 NaCl。"},
- {sym:"Mg",zh:"鎂",cat:"鹼土金屬",zone:"alkaline",period:3,group:2,fact:"燃燒時會發出刺眼的白光：2Mg+O₂→2MgO，早期攝影閃光燈就是用鎂粉燃燒發光。"},
- {sym:"Al",zh:"鋁",cat:"金屬",zone:"metal",period:3,group:13,fact:"地殼中含量最多的金屬。質輕、抗腐蝕，用於飲料罐、飛機機身。"},
- {sym:"Si",zh:"矽",cat:"類金屬",zone:"nonmetal",period:3,group:14,fact:"地殼中含量第二多的元素（僅次於氧），是製造電腦晶片與玻璃的核心原料。"},
- {sym:"P",zh:"磷",cat:"非金屬",zone:"nonmetal",period:3,group:15,fact:"火柴頭上的紅磷摩擦生熱可點燃。磷也是DNA、骨骼的重要組成元素。"},
- {sym:"S",zh:"硫",cat:"非金屬",zone:"nonmetal",period:3,group:16,fact:"黃色固體，燃燒時發出刺鼻藍色火焰並產生SO₂，火山口常見硫磺結晶。"},
- {sym:"Cl",zh:"氯",cat:"鹵素",zone:"halogen",period:3,group:17,fact:"淡綠色有毒氣體，常用於游泳池消毒殺菌。與鈉反應生成食鹽：2Na+Cl₂→2NaCl。"},
- {sym:"Ar",zh:"氬",cat:"鈍氣",zone:"noble",period:3,group:18,fact:"空氣中含量第三多的氣體（約0.9%），因化學性質穩定，常填充於燈泡與焊接保護氣中。"},
- {sym:"K",zh:"鉀",cat:"鹼金屬",zone:"alkali",period:4,group:1,fact:"活性比鈉更強，遇水反應更劇烈。是植物生長必需的肥料三要素之一（氮磷鉀）。"},
- {sym:"Ca",zh:"鈣",cat:"鹼土金屬",zone:"alkaline",period:4,group:2,fact:"構成骨骼與牙齒的主要元素。碳酸鈣(CaCO₃)是石灰岩、貝殼、蛋殼的主成分。"},
- {sym:"Fe",zh:"鐵",cat:"過渡金屬",zone:"metal",period:4,group:8,fact:"人類使用最廣泛的金屬，生鏽是氧化反應：4Fe+3O₂→2Fe₂O₃。血紅素也含鐵，負責運送氧氣。"},
- {sym:"Cu",zh:"銅",cat:"過渡金屬",zone:"metal",period:4,group:11,fact:"導電導熱性極佳，是電線的主要材料。長期暴露空氣中會生成銅綠（鹼式碳酸銅）。"},
- {sym:"Zn",zh:"鋅",cat:"過渡金屬",zone:"metal",period:4,group:12,fact:"常鍍在鐵器表面防鏽（鍍鋅鐵皮）。加入稀鹽酸會產生氫氣：Zn+2HCl→ZnCl₂+H₂。"},
- {sym:"Br",zh:"溴",cat:"鹵素",zone:"halogen",period:4,group:17,fact:"常溫下唯一是液態的非金屬元素，深紅棕色、有刺激性氣味，用於阻燃劑。"},
- {sym:"Ag",zh:"銀",cat:"過渡金屬",zone:"metal",period:5,group:11,fact:"導電性是所有金屬中最好的。銀器接觸含硫物質會變黑：2Ag+S→Ag₂S。"},
- {sym:"Sn",zh:"錫",cat:"金屬",zone:"metal",period:5,group:14,fact:"質軟易延展，常與銅混合成「青銅」，也用於焊接電路板的焊錫。"},
- {sym:"I",zh:"碘",cat:"鹵素",zone:"halogen",period:5,group:17,fact:"碘酒是常見消毒藥水的成分，海帶、紫菜含豐富的碘，是甲狀腺素的重要原料。"},
- {sym:"Ba",zh:"鋇",cat:"鹼土金屬",zone:"alkaline",period:6,group:2,fact:"鋇的化合物能吸收X光，做胃部檢查時喝的「鋇劑」讓腸胃在X光片上顯影。"},
- {sym:"W",zh:"鎢",cat:"過渡金屬",zone:"metal",period:6,group:6,fact:"熔點最高的金屬（約3422°C），早期白熾燈泡的燈絲就是用鎢絲製成。"},
- {sym:"Au",zh:"金",cat:"過渡金屬",zone:"metal",period:6,group:11,fact:"化學性質極穩定，幾乎不與空氣、水反應，是「不會生鏽的金屬」，自古用於貨幣與飾品。"},
- {sym:"Hg",zh:"汞",cat:"過渡金屬",zone:"metal",period:6,group:12,fact:"常溫下唯一是液態的金屬（水銀）。舊式體溫計、血壓計曾使用，因有毒現多已禁用。"},
- {sym:"Pb",zh:"鉛",cat:"金屬",zone:"metal",period:6,group:14,fact:"密度大、質軟。曾用於水管、油漆，因有毒性現已大幅減少使用，鉛中毒對神經系統有害。"},
- {sym:"U",zh:"鈾",cat:"放射性金屬",zone:"boss",period:7,group:3,fact:"具放射性，核分裂可釋放巨大能量，是核能發電與核武器的原料，需嚴格管制使用。"}
+ {sym:"H",zh:"氫",cat:"非金屬",zone:"nonmetal",period:1,group:1,emoji:"💧",fact:"宇宙中最輕、最多的元素。燃燒後生成水：2H₂+O₂→2H₂O。液態氫可作火箭燃料，但需極低溫儲存。"},
+ {sym:"He",zh:"氦",cat:"鈍氣",zone:"noble",period:1,group:18,emoji:"🎈",fact:"第二輕元素，化學性質極穩定不易反應。用於填充氣球、飛船，吸入會讓聲音變尖（但有危險，勿輕易嘗試）。"},
+ {sym:"Li",zh:"鋰",cat:"鹼金屬",zone:"alkali",period:2,group:1,emoji:"🔋",fact:"最輕的金屬，質軟可用刀切。是鋰電池（手機、電動車）的核心元素，遇水會緩慢反應產生氫氣。"},
+ {sym:"C",zh:"碳",cat:"非金屬",zone:"nonmetal",period:2,group:14,emoji:"💎",fact:"生命的基礎元素！鑽石與石墨都是純碳，只是原子排列方式不同。燃燒生成CO₂：C+O₂→CO₂。"},
+ {sym:"N",zh:"氮",cat:"非金屬",zone:"nonmetal",period:2,group:15,emoji:"❄️",fact:"空氣中含量最多的氣體（約78%），化學性質穩定。液態氮溫度極低，常用於急速冷凍食品或保存細胞。"},
+ {sym:"O",zh:"氧",cat:"非金屬",zone:"nonmetal",period:2,group:16,emoji:"🫁",fact:"生物呼吸必需的氣體，佔空氣約21%。也是助燃劑，能使物質燃燒得更旺。"},
+ {sym:"F",zh:"氟",cat:"鹵素",zone:"halogen",period:2,group:17,emoji:"🦷",fact:"化學性質最活潑的元素之一。牙膏中的「氟化物」能強化琺瑯質、預防蛀牙。"},
+ {sym:"Ne",zh:"氖",cat:"鈍氣",zone:"noble",period:2,group:18,emoji:"💡",fact:"通電時發出鮮豔橘紅光，是「霓虹燈」(neon)名稱的由來，常用於招牌燈管。"},
+ {sym:"Na",zh:"鈉",cat:"鹼金屬",zone:"alkali",period:3,group:1,emoji:"🧂",fact:"活性極大，丟進水裡會劇烈反應甚至起火：2Na+2H₂O→2NaOH+H₂。與氯氣反應生成我們每天吃的食鹽 NaCl。"},
+ {sym:"Mg",zh:"鎂",cat:"鹼土金屬",zone:"alkaline",period:3,group:2,emoji:"✨",fact:"燃燒時會發出刺眼的白光：2Mg+O₂→2MgO，早期攝影閃光燈就是用鎂粉燃燒發光。"},
+ {sym:"Al",zh:"鋁",cat:"金屬",zone:"metal",period:3,group:13,emoji:"🥫",fact:"地殼中含量最多的金屬。質輕、抗腐蝕，用於飲料罐、飛機機身。"},
+ {sym:"Si",zh:"矽",cat:"類金屬",zone:"nonmetal",period:3,group:14,emoji:"💻",fact:"地殼中含量第二多的元素（僅次於氧），是製造電腦晶片與玻璃的核心原料。"},
+ {sym:"P",zh:"磷",cat:"非金屬",zone:"nonmetal",period:3,group:15,emoji:"🔥",fact:"火柴頭上的紅磷摩擦生熱可點燃。磷也是DNA、骨骼的重要組成元素。"},
+ {sym:"S",zh:"硫",cat:"非金屬",zone:"nonmetal",period:3,group:16,emoji:"🌋",fact:"黃色固體，燃燒時發出刺鼻藍色火焰並產生SO₂，火山口常見硫磺結晶。"},
+ {sym:"Cl",zh:"氯",cat:"鹵素",zone:"halogen",period:3,group:17,emoji:"🏊",fact:"淡綠色有毒氣體，常用於游泳池消毒殺菌。與鈉反應生成食鹽：2Na+Cl₂→2NaCl。"},
+ {sym:"Ar",zh:"氬",cat:"鈍氣",zone:"noble",period:3,group:18,emoji:"🔦",fact:"空氣中含量第三多的氣體（約0.9%），因化學性質穩定，常填充於燈泡與焊接保護氣中。"},
+ {sym:"K",zh:"鉀",cat:"鹼金屬",zone:"alkali",period:4,group:1,emoji:"🌱",fact:"活性比鈉更強，遇水反應更劇烈。是植物生長必需的肥料三要素之一（氮磷鉀）。"},
+ {sym:"Ca",zh:"鈣",cat:"鹼土金屬",zone:"alkaline",period:4,group:2,emoji:"🦴",fact:"構成骨骼與牙齒的主要元素。碳酸鈣(CaCO₃)是石灰岩、貝殼、蛋殼的主成分。"},
+ {sym:"Fe",zh:"鐵",cat:"過渡金屬",zone:"metal",period:4,group:8,emoji:"⚙️",fact:"人類使用最廣泛的金屬，生鏽是氧化反應：4Fe+3O₂→2Fe₂O₃。血紅素也含鐵，負責運送氧氣。"},
+ {sym:"Cu",zh:"銅",cat:"過渡金屬",zone:"metal",period:4,group:11,emoji:"🔌",fact:"導電導熱性極佳，是電線的主要材料。長期暴露空氣中會生成銅綠（鹼式碳酸銅）。"},
+ {sym:"Zn",zh:"鋅",cat:"過渡金屬",zone:"metal",period:4,group:12,emoji:"🛠️",fact:"常鍍在鐵器表面防鏽（鍍鋅鐵皮）。加入稀鹽酸會產生氫氣：Zn+2HCl→ZnCl₂+H₂。"},
+ {sym:"Br",zh:"溴",cat:"鹵素",zone:"halogen",period:4,group:17,emoji:"🧯",fact:"常溫下唯一是液態的非金屬元素，深紅棕色、有刺激性氣味，用於阻燃劑。"},
+ {sym:"Ag",zh:"銀",cat:"過渡金屬",zone:"metal",period:5,group:11,emoji:"🥈",fact:"導電性是所有金屬中最好的。銀器接觸含硫物質會變黑：2Ag+S→Ag₂S。"},
+ {sym:"Sn",zh:"錫",cat:"金屬",zone:"metal",period:5,group:14,emoji:"🔧",fact:"質軟易延展，常與銅混合成「青銅」，也用於焊接電路板的焊錫。"},
+ {sym:"I",zh:"碘",cat:"鹵素",zone:"halogen",period:5,group:17,emoji:"🩺",fact:"碘酒是常見消毒藥水的成分，海帶、紫菜含豐富的碘，是甲狀腺素的重要原料。"},
+ {sym:"Ba",zh:"鋇",cat:"鹼土金屬",zone:"alkaline",period:6,group:2,emoji:"🩻",fact:"鋇的化合物能吸收X光，做胃部檢查時喝的「鋇劑」讓腸胃在X光片上顯影。"},
+ {sym:"W",zh:"鎢",cat:"過渡金屬",zone:"metal",period:6,group:6,emoji:"💡",fact:"熔點最高的金屬（約3422°C），早期白熾燈泡的燈絲就是用鎢絲製成。"},
+ {sym:"Au",zh:"金",cat:"過渡金屬",zone:"metal",period:6,group:11,emoji:"🥇",fact:"化學性質極穩定，幾乎不與空氣、水反應，是「不會生鏽的金屬」，自古用於貨幣與飾品。"},
+ {sym:"Hg",zh:"汞",cat:"過渡金屬",zone:"metal",period:6,group:12,emoji:"🌡️",fact:"常溫下唯一是液態的金屬（水銀）。舊式體溫計、血壓計曾使用，因有毒現多已禁用。"},
+ {sym:"Pb",zh:"鉛",cat:"金屬",zone:"metal",period:6,group:14,emoji:"🚱",fact:"密度大、質軟。曾用於水管、油漆，因有毒性現已大幅減少使用，鉛中毒對神經系統有害。"},
+ {sym:"U",zh:"鈾",cat:"放射性金屬",zone:"boss",period:7,group:3,emoji:"☢️",fact:"具放射性，核分裂可釋放巨大能量，是核能發電與核武器的原料，需嚴格管制使用。"}
 ];
+
+const CAT_COLOR = {
+  "非金屬":"#34d399", "鈍氣":"#c084fc", "鹼金屬":"#f472b6", "鹼土金屬":"#fb923c",
+  "類金屬":"#4ade80", "鹵素":"#a78bfa", "過渡金屬":"#22d3ee", "金屬":"#60a5fa", "放射性金屬":"#f87171"
+};
+
+/* 完整週期表外形（118 格骨架，僅遊戲教到的 31 個有資料，其餘先賣關子） */
+const PERIODIC_LAYOUT = [
+ ["H",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"He"],
+ ["Li","Be",null,null,null,null,null,null,null,null,null,null,"B","C","N","O","F","Ne"],
+ ["Na","Mg",null,null,null,null,null,null,null,null,null,null,"Al","Si","P","S","Cl","Ar"],
+ ["K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr"],
+ ["Rb","Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe"],
+ ["Cs","Ba","57-71","Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn"],
+ ["Fr","Ra","89-103","Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn","Nh","Fl","Mc","Lv","Ts","Og"]
+];
+const LANTHANIDE_ROW = ["La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu"];
+const ACTINIDE_ROW = ["Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr"];
 
 const ZONES = [
  {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", desc:"H C N O P S Si"},
@@ -330,32 +357,88 @@ function switchTabBase(name){
 let switchTab = switchTabBase;
 document.getElementById("btnGoMap").addEventListener("click", ()=>switchTab("map"));
 
-/* ---------- 全貌總覽（常駐週期表地圖） ---------- */
+/* ---------- 全貌總覽（常駐完整週期表地圖，118 格骨架） ---------- */
+function makeOvCell(sym, row){
+  const cell = document.createElement("div");
+  cell.style.gridRow = row;
+  if(!sym){ cell.className = "ov-cell empty"; return cell; }
+  if(sym==="57-71" || sym==="89-103"){
+    cell.className = "ov-cell placeholder";
+    cell.innerHTML = `<span class="ov-sym">${sym}</span>`;
+    return cell;
+  }
+  const e = ELEMENTS.find(x=>x.sym===sym);
+  if(!e){
+    cell.className = "ov-cell locked";
+    cell.innerHTML = `<span class="ov-sym">${sym}</span>`;
+    cell.title = "之後會學到這個元素";
+    cell.addEventListener("click", ()=>toast("🔒 這個元素之後才會教到，敬請期待！"));
+    return cell;
+  }
+  const cleared = !!state.zoneCleared[e.zone];
+  cell.className = "ov-cell filled" + (cleared?" cleared":"");
+  cell.style.background = CAT_COLOR[e.cat] || "var(--panel2)";
+  cell.style.color = "#0b1420";
+  cell.innerHTML = `<span class="ov-sym">${e.sym}</span>`;
+  cell.title = `${e.zh}（${e.cat}）`;
+  cell.dataset.sym = e.sym;
+  cell.addEventListener("click", ()=>showOvDetail(e, cell));
+  return cell;
+}
 function renderOverview(){
   const grid = document.getElementById("ovGrid");
   grid.innerHTML = "";
-  for(let p=1;p<=7;p++){
-    for(let g=1;g<=18;g++){
-      const e = ELEMENTS.find(x=>x.period===p && x.group===g);
-      const cell = document.createElement("div");
-      cell.style.gridColumn = g;
-      cell.style.gridRow = p;
-      if(!e){
-        cell.className = "ov-cell empty";
-      } else {
-        const known = !!state.known[e.sym];
-        const cleared = !!state.zoneCleared[e.zone];
-        cell.className = "ov-cell filled" + (known?" known":"") + (cleared?" cleared":"");
-        cell.innerHTML = `<span class="ov-sym">${e.sym}</span>`;
-        cell.title = `${e.zh}（${e.cat}）`;
-        cell.addEventListener("click", ()=>{
-          if(isZoneUnlocked(e.zone)){ enterZone(e.zone); switchTab("memorize"); }
-          else toast("🔒 這個王國還沒解鎖喔");
-        });
-      }
+  PERIODIC_LAYOUT.forEach((row, ri)=>{
+    row.forEach((sym, ci)=>{
+      const cell = makeOvCell(sym, ri+1);
+      cell.style.gridColumn = ci+1;
       grid.appendChild(cell);
-    }
-  }
+    });
+  });
+  const spacer = document.createElement("div");
+  spacer.className = "ov-spacer-row";
+  spacer.style.gridRow = 8;
+  grid.appendChild(spacer);
+  LANTHANIDE_ROW.forEach((sym, ci)=>{
+    const cell = makeOvCell(sym, 9);
+    cell.style.gridColumn = ci+3;
+    grid.appendChild(cell);
+  });
+  ACTINIDE_ROW.forEach((sym, ci)=>{
+    const cell = makeOvCell(sym, 10);
+    cell.style.gridColumn = ci+3;
+    grid.appendChild(cell);
+  });
+  renderOvLegend();
+}
+function renderOvLegend(){
+  const legend = document.getElementById("ovLegend");
+  const items = Object.keys(CAT_COLOR).map(cat=>`<span><i class="ov-dot" style="background:${CAT_COLOR[cat]}"></i>${cat}</span>`).join("");
+  legend.innerHTML = items + `<span><i class="ov-dot" style="background:rgba(255,255,255,.08)"></i>之後才會學到</span>`;
+}
+function showOvDetail(e, cellEl){
+  document.querySelectorAll(".ov-cell.selected").forEach(c=>c.classList.remove("selected"));
+  cellEl.classList.add("selected");
+  const detail = document.getElementById("ovDetail");
+  const zoneName = ZONES.find(z=>z.key===e.zone).name;
+  const bullets = e.fact.split("。").map(s=>s.trim()).filter(Boolean).map(s=>`<li>${s}。</li>`).join("");
+  const known = !!state.known[e.sym];
+  detail.innerHTML = `
+    <div class="ov-detail-emoji">${e.emoji}</div>
+    <div class="ov-detail-body">
+      <div class="ov-detail-title"><span class="ov-detail-sym">${e.sym}</span><span class="ov-detail-zh">${e.zh}</span></div>
+      <span class="ov-detail-cat" style="background:${CAT_COLOR[e.cat]}">${e.cat}・${zoneName}</span>
+      <ul>${bullets}</ul>
+      <div class="btn-row" style="justify-content:flex-start;margin-top:10px;">
+        <button class="action secondary" id="ovDetailGo">${known?"🗺️ 前往這個王國":"📖 去背這個元素"}</button>
+      </div>
+    </div>`;
+  detail.classList.add("show");
+  document.getElementById("ovDetailGo").addEventListener("click", ()=>{
+    enterZone(e.zone);
+    switchTab("memorize");
+  });
+  detail.scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 
 /* ---------- 地圖 ---------- */
