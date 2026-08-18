@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>元素勇者：週期表大冒險</title>
 <meta name="theme-color" content="#141E2B">
 <meta name="description" content="用RPG冒險方式學習國中元素週期表：背誦、合成、王國試煉三階段學習法">
@@ -88,7 +88,6 @@
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink2);border:1px solid var(--steel);color:var(--snow);padding:10px 20px;border-radius:10px;font-weight:bold;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50;max-width:90vw;text-align:center;}
   .toast.show{opacity:1;}
   .toast.rare{background:var(--gold);color:#2a1c00;border-color:var(--gold);}
-  .weak-badge{background:var(--danger);color:var(--snow);font-size:.65rem;padding:2px 6px;border-radius:6px;position:absolute;top:8px;right:8px;}
   .small{font-size:.75rem;color:var(--sub);}
   /* ---------- 週期表總覽 ---------- */
   .ov-wrap{overflow-x:auto;padding-bottom:6px;}
@@ -96,7 +95,6 @@
   .ov-cell{border-radius:5px;font-size:.62rem;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;cursor:default;position:relative;}
   .ov-cell.empty{visibility:hidden;}
   .ov-cell.placeholder{background:rgba(255,255,255,.05);color:var(--sub);font-size:.55rem;opacity:.5;}
-  .ov-cell.locked{cursor:default;font-weight:bold;background:rgba(255,255,255,.05);color:var(--sub);border:1px solid rgba(255,255,255,.08);opacity:.55;}
   .ov-cell.filled{cursor:pointer;font-weight:bold;border:1px solid rgba(255,255,255,.25);transition:.15s;}
   .ov-cell.filled:hover{transform:scale(1.08);z-index:2;}
   .ov-cell.filled.cleared{outline:2px solid var(--success);}
@@ -154,8 +152,8 @@
 
   <section id="tab-overview" class="active">
     <div class="ov-hint">
-      這就是完整的<b>元素週期表</b>，總共 118 個元素！<b>橫排</b>叫「週期」、<b>直排</b>叫「族」——同一直排的元素個性很像，所以我們把它們分成 7 個王國，先攻略其中 31 個國中常見的元素。
-      每個格子都可以點下去看介紹；其中 31 個亮眼的元素會列入「王國試煉」教學範圍，其餘的先認識一下，之後有機會慢慢收服！破關越多王國，該區塊就會鑲上金框。
+      這就是完整的<b>元素週期表</b>，總共 118 個元素！<b>橫排</b>叫「週期」、<b>直排</b>叫「族」——同一直排的元素個性很像，所以我們把它們分成 9 個王國，一共有 56 個元素會列入「王國試煉」教學範圍。
+      每個格子都可以點下去看介紹；標<b>⭐</b>的是國中會考較常見的元素，優先背熟它們；其餘的先認識一下，之後有機會慢慢收服！破關越多王國，該區塊就會鑲上綠框。
     </div>
     <div class="ov-wrap"><div class="ov-grid" id="ovGrid"></div></div>
     <div class="ov-legend" id="ovLegend"></div>
@@ -259,7 +257,7 @@
 const ELEMENTS = [
  {sym:"H",zh:"氫",cat:"非金屬",zone:"nonmetal",period:1,group:1,emoji:"💧",fact:"宇宙中最輕、最多的元素。燃燒後生成水：2H₂+O₂→2H₂O。液態氫可作火箭燃料，但需極低溫儲存。"},
  {sym:"He",zh:"氦",cat:"鈍氣",zone:"noble",period:1,group:18,emoji:"🎈",fact:"第二輕元素，化學性質極穩定不易反應。用於填充氣球、飛船，吸入會讓聲音變尖（但有危險，勿輕易嘗試）。"},
- {sym:"Li",zh:"鋰",cat:"鹼金屬",zone:"alkali",period:2,group:1,emoji:"🔋",fact:"最輕的金屬，質軟可用刀切。是鋰電池（手機、電動車）的核心元素，遇水會緩慢反應產生氫氣。"},
+ {sym:"Li",zh:"鋰",cat:"鹼金屬",zone:"alkali",period:2,group:1,emoji:"🔋",fact:"最輕的金屬，質軟可用刀切。是鋰電池（手機、電動車）的核心元素，遇水會反應產生氫氣（比鈉溫和，但仍具危險性）。"},
  {sym:"C",zh:"碳",cat:"非金屬",zone:"nonmetal",period:2,group:14,emoji:"💎",fact:"生命的基礎元素！鑽石與石墨都是純碳，只是原子排列方式不同。燃燒生成CO₂：C+O₂→CO₂。"},
  {sym:"N",zh:"氮",cat:"非金屬",zone:"nonmetal",period:2,group:15,emoji:"❄️",fact:"空氣中含量最多的氣體（約78%），化學性質穩定。液態氮溫度極低，常用於急速冷凍食品或保存細胞。"},
  {sym:"O",zh:"氧",cat:"非金屬",zone:"nonmetal",period:2,group:16,emoji:"🫁",fact:"生物呼吸必需的氣體，佔空氣約21%。也是助燃劑，能使物質燃燒得更旺。"},
@@ -269,9 +267,9 @@ const ELEMENTS = [
  {sym:"Mg",zh:"鎂",cat:"鹼土金屬",zone:"alkaline",period:3,group:2,emoji:"✨",fact:"燃燒時會發出刺眼的白光：2Mg+O₂→2MgO，早期攝影閃光燈就是用鎂粉燃燒發光。"},
  {sym:"Al",zh:"鋁",cat:"金屬",zone:"metal",period:3,group:13,emoji:"🥫",fact:"地殼中含量最多的金屬。質輕、抗腐蝕，用於飲料罐、飛機機身。"},
  {sym:"Si",zh:"矽",cat:"類金屬",zone:"nonmetal",period:3,group:14,emoji:"💻",fact:"地殼中含量第二多的元素（僅次於氧），是製造電腦晶片與玻璃的核心原料。"},
- {sym:"P",zh:"磷",cat:"非金屬",zone:"nonmetal",period:3,group:15,emoji:"🔥",fact:"火柴頭上的紅磷摩擦生熱可點燃。磷也是DNA、骨骼的重要組成元素。"},
+ {sym:"P",zh:"磷",cat:"非金屬",zone:"nonmetal",period:3,group:15,emoji:"🔥",fact:"安全火柴盒側面的摩擦面塗有紅磷，摩擦生熱引燃火柴頭的氧化劑。磷也是DNA、骨骼的重要組成元素。"},
  {sym:"S",zh:"硫",cat:"非金屬",zone:"nonmetal",period:3,group:16,emoji:"🌋",fact:"黃色固體，燃燒時發出刺鼻藍色火焰並產生SO₂，火山口常見硫磺結晶。"},
- {sym:"Cl",zh:"氯",cat:"鹵素",zone:"halogen",period:3,group:17,emoji:"🏊",fact:"淡綠色有毒氣體，常用於游泳池消毒殺菌。與鈉反應生成食鹽：2Na+Cl₂→2NaCl。"},
+ {sym:"Cl",zh:"氯",cat:"鹵素",zone:"halogen",period:3,group:17,emoji:"🏊",fact:"黃綠色有毒氣體，常用於游泳池消毒殺菌。與鈉反應生成食鹽：2Na+Cl₂→2NaCl。"},
  {sym:"Ar",zh:"氬",cat:"鈍氣",zone:"noble",period:3,group:18,emoji:"🔦",fact:"空氣中含量第三多的氣體（約0.9%），因化學性質穩定，常填充於燈泡與焊接保護氣中。"},
  {sym:"K",zh:"鉀",cat:"鹼金屬",zone:"alkali",period:4,group:1,emoji:"🌱",fact:"活性比鈉更強，遇水反應更劇烈。是植物生長必需的肥料三要素之一（氮磷鉀）。"},
  {sym:"Ca",zh:"鈣",cat:"鹼土金屬",zone:"alkaline",period:4,group:2,emoji:"🦴",fact:"構成骨骼與牙齒的主要元素。碳酸鈣(CaCO₃)是石灰岩、貝殼、蛋殼的主成分。"},
@@ -293,7 +291,7 @@ const ELEMENTS = [
  {sym:"Kr",zh:"氪",cat:"鈍氣",zone:"noble",period:4,group:18,emoji:"💡",fact:"用於某些省電螢光燈與攝影閃光燈。超人的家鄉「氪星」(Krypton)就是借用這個元素的英文名。"},
  {sym:"Xe",zh:"氙",cat:"鈍氣",zone:"noble",period:5,group:18,emoji:"🚗",fact:"用於高亮度的「氙氣大燈」（HID車燈）與攝影棚閃光燈，發出接近日光的白光。"},
  {sym:"Rn",zh:"氡",cat:"鈍氣",zone:"noble",period:6,group:18,emoji:"☢️",fact:"具放射性的氣體，可能從土壤或岩石中逸散進入室內，長期吸入有致癌風險，所以房屋需要保持通風。"},
- {sym:"Rb",zh:"銣",cat:"鹼金屬",zone:"alkali",period:5,group:1,emoji:"⏰",fact:"活性比鉀更強，遇空氣就可能自燃，常用於精密的原子鐘與煙火中的紫色火焰。"},
+ {sym:"Rb",zh:"銣",cat:"鹼金屬",zone:"alkali",period:5,group:1,emoji:"⏰",fact:"活性比鉀更強，遇空氣就可能自燃，常用於精密的原子鐘；焰色測試呈紫紅色。"},
  {sym:"Cs",zh:"銫",cat:"鹼金屬",zone:"alkali",period:6,group:1,emoji:"⏱️",fact:"鹼金屬中活性最強的穩定元素之一。「銫原子鐘」是目前世界最精準的計時標準，1秒的定義就是根據銫-133原子振動。"},
  {sym:"Be",zh:"鈹",cat:"鹼土金屬",zone:"alkaline",period:2,group:2,emoji:"✈️",fact:"質輕又硬，用於航太結構與X光機的窗口材料，但加工時粉塵具毒性，需小心處理。"},
  {sym:"Sr",zh:"鍶",cat:"鹼土金屬",zone:"alkaline",period:5,group:2,emoji:"🎆",fact:"燃燒時會發出鮮豔的紅色火焰，是煙火中紅色的主要來源。"},
@@ -334,7 +332,7 @@ const CATEGORY_INFO = {
   "人工合成":{emoji:"🧫", fact:"人工合成元素，只能在實驗室用粒子加速器製造出極少量，極不穩定，瞬間就會衰變。"},
   "放射性金屬":{emoji:"☢️", fact:"具放射性的金屬元素，需嚴格管制使用。"}
 };
-/* 全部118個元素的中文名與分類（僅供全貌總覽查看；只有下方 ELEMENTS 裡的31個是遊戲實際教學範圍） */
+/* 全部118個元素的中文名與分類（僅供全貌總覽查看；只有上方 ELEMENTS 裡的 56 個是遊戲實際教學範圍） */
 const FULL_ELEMENTS = [
  {sym:"H",zh:"氫",cat:"非金屬"},{sym:"He",zh:"氦",cat:"鈍氣"},
  {sym:"Li",zh:"鋰",cat:"鹼金屬"},{sym:"Be",zh:"鈹",cat:"鹼土金屬"},{sym:"B",zh:"硼",cat:"類金屬"},{sym:"C",zh:"碳",cat:"非金屬"},{sym:"N",zh:"氮",cat:"非金屬"},{sym:"O",zh:"氧",cat:"非金屬"},{sym:"F",zh:"氟",cat:"鹵素"},{sym:"Ne",zh:"氖",cat:"鈍氣"},
@@ -348,7 +346,11 @@ const FULL_ELEMENTS = [
  {sym:"Ac",zh:"錒",cat:"錒系"},{sym:"Th",zh:"釷",cat:"錒系"},{sym:"Pa",zh:"鏷",cat:"錒系"},{sym:"U",zh:"鈾",cat:"放射性金屬"},{sym:"Np",zh:"錼",cat:"錒系"},{sym:"Pu",zh:"鈽",cat:"錒系"},{sym:"Am",zh:"鋂",cat:"錒系"},{sym:"Cm",zh:"鋦",cat:"錒系"},{sym:"Bk",zh:"鉳",cat:"錒系"},{sym:"Cf",zh:"鉲",cat:"錒系"},{sym:"Es",zh:"鑀",cat:"錒系"},{sym:"Fm",zh:"鐨",cat:"錒系"},{sym:"Md",zh:"鍆",cat:"錒系"},{sym:"No",zh:"鍩",cat:"錒系"},{sym:"Lr",zh:"鐒",cat:"錒系"}
 ];
 
-/* 完整週期表外形（118 格骨架，僅遊戲教到的 31 個有資料，其餘先賣關子） */
+/* 原子序（=質子數，會考核心概念）：依 1~118 順序排列的符號表 */
+const Z_ORDER = "H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og".split(" ");
+const ATOMIC_NUM = {}; Z_ORDER.forEach((s,i)=>ATOMIC_NUM[s]=i+1);
+
+/* 完整週期表外形（118 格骨架，僅遊戲教到的 56 個有完整資料，其餘先賣關子） */
 const PERIODIC_LAYOUT = [
  ["H",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"He"],
  ["Li","Be",null,null,null,null,null,null,null,null,null,null,"B","C","N","O","F","Ne"],
@@ -361,11 +363,11 @@ const PERIODIC_LAYOUT = [
 const LANTHANIDE_ROW = ["La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu"];
 const ACTINIDE_ROW = ["Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr"];
 
-/* 國中會考較常見／常考的元素（標⭐必考）；其餘為知識延伸，不特別標註 */
-const EXAM_LIKELY = new Set(["H","He","Li","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl","Ar","K","Ca","Fe","Cu","Zn","Br","Ag","Sn","I","Ba","W","Au","Hg","Pb","U"]);
+/* 國中會考較常見／常考的元素（標⭐必考）；其餘為知識延伸，不特別標註。Mn 因雙氧水+二氧化錳製氧是國中經典實驗而入列 */
+const EXAM_LIKELY = new Set(["H","He","Li","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl","Ar","K","Ca","Fe","Cu","Zn","Br","Ag","Sn","I","Ba","W","Au","Hg","Pb","U","Mn"]);
 
 const ZONES = [
- {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", color:"#34d399", desc:"H C N O P S Si B Se Ge As Sb Te"},
+ {key:"nonmetal", name:"迷霧非金屬林", emoji:"🌫️", color:"#34d399", desc:"H C N O P S Se（非金屬）＋ B Si Ge As Sb Te（類金屬）"},
  {key:"noble", name:"寂靜鈍氣聖殿", emoji:"❄️", color:"#c084fc", desc:"He Ne Ar Kr Xe Rn"},
  {key:"alkali", name:"烈焰鹼金部落", emoji:"🔥", color:"#f472b6", desc:"Li Na K Rb Cs"},
  {key:"alkaline", name:"磐石鹼土要塞", emoji:"🪨", color:"#fb923c", desc:"Be Mg Ca Sr Ba"},
@@ -382,8 +384,8 @@ const RECIPES = [
  {r:["Mg","O"], product:"MgO", name:"氧化鎂（刺眼白光）", eq:"2Mg + O₂ → 2MgO", emoji:"✨", type:"reaction", rarity:"common"},
  {r:["Fe","S"], product:"FeS", name:"硫化亞鐵", eq:"Fe + S → FeS", emoji:"⚙️", type:"reaction", rarity:"common"},
  {r:["Na","Cl"], product:"NaCl", name:"食鹽", eq:"2Na + Cl₂ → 2NaCl", emoji:"🧂", type:"reaction", rarity:"common"},
- {r:["Zn","H"], product:"ZnCl₂+H₂", name:"氫氣（鋅加鹽酸）", eq:"Zn + 2HCl → ZnCl₂ + H₂", emoji:"💨", type:"reaction", rarity:"common"},
- {r:["Cu","S"], product:"CuS", name:"硫化銅", eq:"Cu + S → CuS", emoji:"🔌", type:"reaction", rarity:"common"},
+ {r:["Zn","Cl"], product:"ZnCl₂", name:"氯化鋅", eq:"Zn + Cl₂ → ZnCl₂", emoji:"🛠️", type:"reaction", rarity:"common"},
+ {r:["Cu","S"], product:"Cu₂S", name:"硫化亞銅", eq:"2Cu + S → Cu₂S", emoji:"🔌", type:"reaction", rarity:"common"},
  {r:["Fe","O"], product:"Fe₂O₃", name:"氧化鐵（鐵鏽）", eq:"4Fe + 3O₂ → 2Fe₂O₃", emoji:"🟤", type:"reaction", rarity:"common"},
  {r:["Ag","S"], product:"Ag₂S", name:"硫化銀（銀變黑）", eq:"2Ag + S → Ag₂S", emoji:"🥈", type:"reaction", rarity:"rare"},
  {r:["Al","O"], product:"Al₂O₃", name:"氧化鋁", eq:"4Al + 3O₂ → 2Al₂O₃", emoji:"🥫", type:"reaction", rarity:"common"},
@@ -418,7 +420,7 @@ const RECIPES = [
  {r:["Fe","Cr"], product:"鉻鐵合金", name:"鉻鐵合金（不鏽鋼的基礎）", eq:"Fe + Cr", emoji:"🍳", type:"alloy", rarity:"common"},
  {r:["Ce","Fe"], product:"打火石合金", name:"打火石合金（露營、打火機火花）", eq:"Ce + Fe", emoji:"🔥", type:"alloy", rarity:"rare"},
  {r:["Al","Mg"], product:"鎂鋁合金", name:"鎂鋁合金（筆電、手機外殼）", eq:"Al + Mg", emoji:"💻", type:"alloy", rarity:"common"},
- {r:["Ti","Cl"], product:"TiCl₄", name:"四氯化鈦（舞台煙霧效果）", eq:"Ti + 2Cl₂ → TiCl₄", emoji:"💨", type:"reaction", rarity:"rare"},
+ {r:["Ti","Cl"], product:"TiCl₄", name:"四氯化鈦（軍事煙幕、空中寫字；遇濕氣白煙具腐蝕性）", eq:"Ti + 2Cl₂ → TiCl₄", emoji:"💨", type:"reaction", rarity:"rare"},
  {r:["Sn","Pb"], product:"錫鉛焊料", name:"錫鉛焊料（電路板焊接）", eq:"Sn + Pb", emoji:"🔧", type:"alloy", rarity:"common"},
  {r:["Fe","Cr","Ni"], product:"不鏽鋼", name:"不鏽鋼（餐具、水槽）", eq:"Fe + Cr + Ni", emoji:"🍴", type:"alloy", rarity:"legendary"},
  {r:["Cu","Sn","Zn"], product:"青銅合金II", name:"複合青銅（鐘、雕像用）", eq:"Cu + Sn + Zn", emoji:"🔔", type:"alloy", rarity:"legendary"},
@@ -447,22 +449,32 @@ function defaultState(){
     crafted:{},      // recipe product -> true
     zoneCleared:{},  // zone key -> true
     inventory:{},    // sym -> true (已收集，可用來合成)
+    lastZone:null,   // 上次進入的王國，重新整理後自動恢復三個分頁
     crystals:0
   };
 }
 function loadState(){
   try{ const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if(s) return Object.assign(defaultState(), s); }catch(e){}
+  // v1 存檔遷移：舊版 key 的進度直接搬進 v2，避免更新後進度無聲歸零
+  try{
+    const old = JSON.parse(localStorage.getItem("elementquest_save_v1"));
+    if(old && typeof old === "object"){
+      const m = Object.assign(defaultState(), old);
+      localStorage.setItem(SAVE_KEY, JSON.stringify(m));
+      return m;
+    }
+  }catch(e){}
   return defaultState();
 }
 function saveState(){ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
 
-function toast(msg, rare){
+function toast(msg, rare, ms){
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.classList.toggle("rare", !!rare);
   t.classList.add("show");
   clearTimeout(toast._h);
-  toast._h = setTimeout(()=>t.classList.remove("show"), 2000);
+  toast._h = setTimeout(()=>t.classList.remove("show"), ms || 2000);
 }
 
 /* ---------- Tabs ---------- */
@@ -562,7 +574,7 @@ function showOvDetail(e, cellEl){
   detail.innerHTML = `
     <div class="ov-detail-emoji">${emoji}</div>
     <div class="ov-detail-body">
-      <div class="ov-detail-title"><span class="ov-detail-sym">${e.sym}</span><span class="ov-detail-zh">${e.zh}</span>${EXAM_LIKELY.has(e.sym)?'<span title="國中會考常見">⭐</span>':''}</div>
+      <div class="ov-detail-title"><span class="ov-detail-sym">${e.sym}</span><span class="ov-detail-zh">${e.zh}</span>${ATOMIC_NUM[e.sym]?`<span class="small" style="opacity:.75">原子序 ${ATOMIC_NUM[e.sym]}</span>`:''}${EXAM_LIKELY.has(e.sym)?'<span title="國中會考常見">⭐</span>':''}</div>
       ${actionHtml}
     </div>`;
   detail.classList.add("show");
@@ -613,6 +625,8 @@ function renderZones(){
 
 function enterZone(key){
   currentZone = key;
+  state.lastZone = key;
+  saveState();
   tabs.forEach(b=>{ if(["memorize","craft","battle"].includes(b.dataset.tab)) b.disabled=false; });
   startMemorize(key);
   switchTab("memorize");
@@ -655,7 +669,7 @@ function showMemCard(){
   document.getElementById("cardEmoji").textContent = e.emoji;
   document.getElementById("cardSym").textContent = e.sym;
   document.getElementById("cardZh").textContent = e.zh;
-  document.getElementById("cardCat").textContent = e.cat;
+  document.getElementById("cardCat").textContent = e.cat + (ATOMIC_NUM[e.sym] ? `・原子序 ${ATOMIC_NUM[e.sym]}` : "");
   document.getElementById("cardExam").textContent = EXAM_LIKELY.has(e.sym) ? "⭐ 國中會考較常見" : "";
   document.getElementById("cardFact").textContent = e.fact;
   document.getElementById("memProgress").textContent = `剩 ${memQueue.length} 張待熟悉（${e.zh} / ${e.sym}）`;
@@ -685,7 +699,7 @@ let craftSlots = []; // 最多3個符號，2或3元素合成
 
 /* 危險/知名但無配方的組合，給予風味提示而非單純「沒有反應」 */
 const DANGEROUS_HINTS = {
-  "Na,K": "⚠️ 鹼金屬遇水會劇烈反應甚至起火，遊戲中沒有把這個做成配方，但鈉、鉀丟進水裡真的非常危險，勿模仿！",
+  "Na,K": "🧪 鈉和鉀混合其實會形成液態合金（NaK）！但鹼金屬活性極大、遇水會劇烈反應甚至起火，非常危險，勿模仿！",
   "H,He": "💨 氦是鈍氣，幾乎不與任何元素反應，這也是「鈍氣」名稱的由來。",
   "Au,O": "🥇 金的化學性質太穩定了，幾乎不會被氧氣氧化，這正是黃金「不生鏽」的原因。"
 };
@@ -741,21 +755,27 @@ document.getElementById("btnCraft").addEventListener("click", ()=>{
       saveState();
       toast(isAlloy
         ? `🔩 合成成功：${recipe.name}（${recipe.eq}，這是物理混合的合金，不是化學反應）`
-        : `⚗️ 合成成功：${recipe.name}（${recipe.eq}）`);
+        : `⚗️ 合成成功：${recipe.name}（${recipe.eq}）`, false, 3600);
       if(Math.random() < bonusChance){
         state.crystals = (state.crystals||0)+1;
         saveState();
-        setTimeout(()=>toast(`✨ ${recipe.rarity==="legendary"?"傳說":recipe.rarity==="rare"?"稀有":"普通"}配方獎勵結晶！目前 ${state.crystals} 顆`, true), 1000);
+        setTimeout(()=>toast(`✨ ${recipe.rarity==="legendary"?"傳說":recipe.rarity==="rare"?"稀有":"普通"}配方獎勵結晶！目前 ${state.crystals} 顆`, true), 3700);
       }
     } else {
-      toast(`已經合成過 ${recipe.name} 了！`);
+      // 複習合成也值得小獎勵
+      toast(`🔁 複習合成：${recipe.name}（${recipe.eq}）`, false, 3200);
+      if(Math.random() < 0.1){
+        state.crystals = (state.crystals||0)+1;
+        saveState();
+        setTimeout(()=>toast(`✨ 複習獎勵結晶！目前 ${state.crystals} 顆`, true), 3300);
+      }
     }
   } else {
     const key = craftSlots.slice().sort().join(",");
-    toast(DANGEROUS_HINTS[key] || DANGEROUS_HINTS[craftSlots.slice().sort().reverse().join(",")] || "💨 這個組合沒有反應...換個試試？");
+    toast(DANGEROUS_HINTS[key] || DANGEROUS_HINTS[craftSlots.slice().sort().reverse().join(",")] || "💨 遊戲裡還沒有這個配方，換個組合試試？（不代表現實中一定不會反應喔）", false, 3200);
   }
   craftSlots=[];
-  setTimeout(renderCraft, 900);
+  setTimeout(renderCraft, 2600);
   updateHeaderStats();
 });
 function renderRecipeList(){
@@ -833,9 +853,12 @@ function pickWeighted(pool){
 }
 
 function nextBattleQuestion(){
+  battle.answered = false;
+  battle.hintUsed = false;
   const pool = battle.pool;
   const r = Math.random();
-  const madeRecipes = RECIPES.filter(rc => rc.r.every(s=>state.known[s]));
+  // 找碴題只用「化學反應」配方——合金是物理混合，沒有反應式可挑錯
+  const madeRecipes = RECIPES.filter(rc => rc.type==="reaction" && rc.r.every(s=>state.known[s]));
   let qtype = "symbol";
   if(r < 0.15 && pool.length>=3) qtype = "oddOne";
   else if(r < 0.30 && madeRecipes.length>0) qtype = "equation";
@@ -863,10 +886,13 @@ function nextBattleQuestion(){
   }
   if(qtype==="category"){
     // 分類辨識：這個元素屬於哪一族
+    // 「金屬／過渡金屬／放射性金屬」化學上不互斥（Fe 也是金屬），不可互為干擾項，避免「程式唯一解、化學多重解」
+    const CONFUSABLE = {"金屬":["過渡金屬","放射性金屬"], "過渡金屬":["金屬","放射性金屬"], "放射性金屬":["金屬","過渡金屬"]};
     const e = pickWeighted(pool);
     battle.current = e;
     const allCats = Object.keys(CAT_COLOR).filter(c=>c!=="人工合成" && c!=="鑭系" && c!=="錒系");
-    const others = allCats.filter(c=>c!==e.cat);
+    const banned = CONFUSABLE[e.cat] || [];
+    const others = allCats.filter(c=>c!==e.cat && !banned.includes(c));
     const opts = [e.cat];
     const shuffledCats = others.slice().sort(()=>Math.random()-0.5);
     while(opts.length<4 && shuffledCats.length>0) opts.push(shuffledCats.pop());
@@ -879,41 +905,64 @@ function nextBattleQuestion(){
   }
 
   if(qtype==="oddOne"){
-    // 跨元素比較：同「分類」(cat) 3個 + 不同分類 1個，找出「性質最不同」的那一個
-    // 用cat分組而非zone，因為zone(王國)只是地圖分區，同一王國可能混雜多種化學分類，cat才是真正決定「性質」的依據
-    const catCounts = {};
-    ELEMENTS.forEach(e=>{ catCounts[e.cat] = (catCounts[e.cat]||0)+1; });
-    const eligibleCats = Object.keys(catCounts).filter(c=>catCounts[c]>=3);
+    // 跨元素比較：同「分類」3個 + 不同分類 1個，找出「性質最不同」的那一個
+    // (1) 金屬/過渡金屬/放射性金屬化學上都是金屬，視為同一組，避免「四個都是金屬」的爭議題
+    // (2) 取材限「已背過的元素 ∪ 當前王國」，新手不會被問到還沒學的鑭系元素
+    const effCat = c => (c==="金屬"||c==="過渡金屬"||c==="放射性金屬") ? "金屬" : c;
+    const buildEligible = pool => {
+      const cc = {};
+      pool.forEach(e=>{ const c=effCat(e.cat); cc[c]=(cc[c]||0)+1; });
+      return Object.keys(cc).filter(c=>cc[c]>=3 && pool.some(e=>effCat(e.cat)!==c));
+    };
+    let oddPool = ELEMENTS.filter(e=>state.known[e.sym] || e.zone===battle.zone);
+    let eligibleCats = buildEligible(oddPool);
+    if(eligibleCats.length===0){ oddPool = ELEMENTS; eligibleCats = buildEligible(oddPool); }
     if(eligibleCats.length===0){ qtype = battle.qtype = "symbol"; }
     else {
       const chosenCat = eligibleCats[Math.floor(Math.random()*eligibleCats.length)];
-      const sameCat = ELEMENTS.filter(e=>e.cat===chosenCat).sort(()=>Math.random()-0.5).slice(0,3);
-      const others = ELEMENTS.filter(e=>e.cat!==chosenCat);
+      const sameCat = oddPool.filter(e=>effCat(e.cat)===chosenCat).sort(()=>Math.random()-0.5).slice(0,3);
+      const others = oddPool.filter(e=>effCat(e.cat)!==chosenCat);
       const odd = others[Math.floor(Math.random()*others.length)];
       const opts = sameCat.concat([odd]).sort(()=>Math.random()-0.5);
+      const catLabel = chosenCat==="金屬" ? "金屬家族（含過渡金屬）" : chosenCat;
       battle.current = odd;
       battle.opts = opts.map(e=>`${e.sym} ${e.zh}`);
       battle.answer = `${odd.sym} ${odd.zh}`;
-      battle.qtext = `哪一個元素跟其他三個「化學分類」不一樣？（提示：其他三個都是${chosenCat}）`;
+      battle.qtext = `哪一個元素跟其他三個「化學分類」不一樣？（提示：其他三個都是${catLabel}）`;
+      battle.errType = "category";
       return;
     }
   }
   if(qtype==="equation"){
+    // 找碴題的「錯誤元素」不能換出另一條化學上成立的方程式（例：Zn+2HCl 換成 Mg+2HCl 仍是正確反應）。
+    // 規則：換入的元素必須「金屬類⇄非金屬類」跨界（或用鈍氣——鈍氣幾乎不反應，本身就有教育意義），
+    // 且換完的組合不能是遊戲內任何真實配方。
+    const METALLIC = new Set(["鹼金屬","鹼土金屬","金屬","過渡金屬","放射性金屬","鑭系"]);
     const recipe = madeRecipes[Math.floor(Math.random()*madeRecipes.length)];
     const rightSym = recipe.r[Math.floor(Math.random()*recipe.r.length)];
-    const wrongPool = ELEMENTS.filter(e=>e.sym!==rightSym && state.known[e.sym]);
-    if(wrongPool.length<3){ battle.qtype="symbol"; }
+    const rightEl = ELEMENTS.find(e=>e.sym===rightSym);
+    const swappedIsRealRecipe = w => RECIPES.some(rc=>{
+      const a = recipe.r.map(s=>s===rightSym? w : s).slice().sort();
+      const b = rc.r.slice().sort();
+      return a.length===b.length && a.every((s,i)=>s===b[i]);
+    });
+    const wrongCandidates = ELEMENTS.filter(e =>
+      e.sym!==rightSym && !recipe.r.includes(e.sym)
+      && (e.cat==="鈍氣" || (METALLIC.has(rightEl.cat) ? !METALLIC.has(e.cat) : METALLIC.has(e.cat)))
+      && !swappedIsRealRecipe(e.sym));
+    const wrongSym = wrongCandidates.length ? wrongCandidates[Math.floor(Math.random()*wrongCandidates.length)].sym : null;
+    const optPool = ELEMENTS.filter(e=>e.sym!==rightSym && e.sym!==wrongSym && state.known[e.sym]);
+    if(!wrongSym || optPool.length<3){ battle.qtype="symbol"; }
     else {
-      const wrongSym = wrongPool[Math.floor(Math.random()*wrongPool.length)].sym;
       const fakeEq = recipe.eq.split(rightSym).join(wrongSym);
       const opts = [rightSym];
-      const shuffledWrong = wrongPool.slice().sort(()=>Math.random()-0.5);
+      const shuffledWrong = optPool.slice().sort(()=>Math.random()-0.5);
       while(opts.length<4 && shuffledWrong.length>0){
         const pick = shuffledWrong.pop().sym;
-        if(!opts.includes(pick)) opts.push(pick);
+        if(!opts.includes(pick) && pick!==wrongSym) opts.push(pick);
       }
       opts.sort(()=>Math.random()-0.5);
-      battle.current = ELEMENTS.find(e=>e.sym===rightSym);
+      battle.current = rightEl;
       battle.opts = opts;
       battle.answer = rightSym;
       battle.qtext = `找碴！這個反應式怪怪的：「${fakeEq}」，正確應該是哪個元素？`;
@@ -958,9 +1007,35 @@ function renderBattle(){
     b.addEventListener("click", ()=>answerBattle(o, b));
     optsDiv.appendChild(b);
   });
+  // 結晶消耗出口：花 3 顆排除兩個錯誤選項
+  if(battle.opts.length>=4){
+    const hint = document.createElement("div");
+    hint.className = "opt";
+    hint.id = "battleHintBtn";
+    hint.style.cssText = "opacity:.85;font-size:13px;border-style:dashed";
+    hint.textContent = `💎 提示：花 3 顆結晶排除兩個錯誤選項（現有 ${state.crystals||0} 顆）`;
+    hint.addEventListener("click", useBattleHint);
+    optsDiv.appendChild(hint);
+  }
   document.getElementById("battleLog").textContent = `幫元素之靈想起自己的身份，牠就會安心歸位（熟練度需達 ${MASTERY_TARGET}/${MASTERY_MAX}）`;
 }
+function useBattleHint(){
+  if(battle.answered || battle.hintUsed) return;
+  if((state.crystals||0) < 3){ toast("💎 結晶不夠（需要 3 顆）——答題與合成都有機會獲得！"); return; }
+  battle.hintUsed = true;
+  state.crystals -= 3;
+  saveState();
+  updateHeaderStats();
+  const wrongs = Array.from(document.querySelectorAll("#battleOpts .opt"))
+    .filter(o=>o.id!=="battleHintBtn" && o.textContent!==battle.answer);
+  wrongs.sort(()=>Math.random()-0.5).slice(0,2).forEach(o=>{ o.style.visibility="hidden"; o.style.pointerEvents="none"; });
+  const btn = document.getElementById("battleHintBtn");
+  if(btn){ btn.style.visibility="hidden"; btn.style.pointerEvents="none"; }
+  toast(`💎 已排除兩個錯誤選項！剩 ${state.crystals} 顆結晶`);
+}
 function answerBattle(choice, btnEl){
+  if(battle.answered) return; // 800ms 回饋期間鎖住，避免連點重複計分
+  battle.answered = true;
   const e = battle.current;
   const correct = choice === battle.answer;
   document.querySelectorAll("#battleOpts .opt").forEach(o=>{
@@ -996,20 +1071,61 @@ function answerBattle(choice, btnEl){
 }
 function finishBattle(win){
   if(win){
+    // 每場勝利固定 +1 結晶（複習值得被獎勵，不再只靠機率）
+    state.crystals = (state.crystals||0) + 1;
     const allGraduated = battle.pool.every(e => (state.mastery[e.sym]||0) >= MASTERY_TARGET);
-    if(allGraduated){
-      state.zoneCleared[battle.zone] = true;
-      toast("🏆 元素之靈全部找回自己的位置了！本區完全破關！");
+    const newlyCleared = allGraduated && !state.zoneCleared[battle.zone];
+    if(allGraduated) state.zoneCleared[battle.zone] = true;
+    if(newlyCleared){
+      state.crystals += 10;
+      toast(`🏆🎆 本區完全破關！元素之靈全部歸位！破關大獎 +10 結晶（共 ${state.crystals} 顆）`, true, 4000);
+    } else if(allGraduated){
+      toast(`🏆 再次制霸本區！勝利獎勵 +1 結晶（共 ${state.crystals} 顆）`, true);
     } else {
-      toast("🎉 打贏這回合！但還有元素之靈沒完全安定，再挑戰一次複習吧");
+      toast(`🎉 打贏這回合！勝利獎勵 +1 結晶（共 ${state.crystals} 顆）`);
     }
     saveState();
     updateHeaderStats();
-    switchTab("overview");
+    showBattleResult(allGraduated);
   } else {
     toast("💫 專注力用完了...再試一次！背熟一點再來挑戰吧");
     switchTab("memorize");
   }
+}
+/* 勝利結算畫面：列出每個元素的熟練度，讓學生一眼看到「還要刷哪幾個」 */
+function showBattleResult(allGraduated){
+  const z = ZONES.find(zz=>zz.key===battle.zone);
+  document.getElementById("qtypeTag").textContent = "🏆 勝利結算";
+  document.getElementById("battleQ").textContent = allGraduated
+    ? `${z.name} 完全破關！全部元素熟練度都達 ${MASTERY_TARGET}/${MASTERY_MAX} 以上`
+    : `離破關還差一點——熟練度未滿 ${MASTERY_TARGET}/${MASTERY_MAX} 的元素：`;
+  const optsDiv = document.getElementById("battleOpts");
+  optsDiv.innerHTML = "";
+  const sorted = battle.pool.slice().sort((a,b)=>(state.mastery[a.sym]||0)-(state.mastery[b.sym]||0));
+  sorted.forEach(e=>{
+    const lvl = state.mastery[e.sym]||0;
+    const ok = lvl >= MASTERY_TARGET;
+    if(allGraduated && !ok) return;
+    const chip = document.createElement("div");
+    chip.className = "opt";
+    chip.style.cssText = ok ? "opacity:.55" : "";
+    chip.textContent = `${ok?"✅":"🔸"} ${e.sym} ${e.zh}　熟練度 ${lvl}/${MASTERY_MAX}`;
+    optsDiv.appendChild(chip);
+  });
+  const again = document.createElement("div");
+  again.className = "opt";
+  again.style.cssText = "font-weight:800";
+  again.textContent = allGraduated ? "⚔️ 換個難度再玩一場" : "⚔️ 再挑戰一次，衝破關！";
+  again.addEventListener("click", showDiffScreen);
+  optsDiv.appendChild(again);
+  const back = document.createElement("div");
+  back.className = "opt";
+  back.textContent = "🗺️ 回地圖選其他王國";
+  back.addEventListener("click", ()=>switchTab("map"));
+  optsDiv.appendChild(back);
+  document.getElementById("battleLog").textContent = allGraduated
+    ? "🎆 恭喜！可以去挑戰下一個王國，或提高難度賺更多結晶"
+    : "提示：熟練度低的元素會更常被抽到，多打幾場就能補起來";
 }
 
 /* ---------- Tab 切換時的資料刷新 ---------- */
@@ -1023,6 +1139,13 @@ switchTab = function(name){
 renderOverview();
 renderZones();
 updateHeaderStats();
+// 回訪玩家：恢復上次進入的王國，三個分頁不用重新從地圖點一次
+if(state.lastZone && ZONES.some(z=>z.key===state.lastZone) && isZoneUnlocked(state.lastZone)){
+  currentZone = state.lastZone;
+  tabs.forEach(b=>{ if(["memorize","craft","battle"].includes(b.dataset.tab)) b.disabled=false; });
+  startMemorize(currentZone);
+  switchTab("overview");
+}
 
 if("serviceWorker" in navigator){
   window.addEventListener("load", ()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
@@ -1133,6 +1256,7 @@ if("serviceWorker" in navigator){
   function later(){ setTimeout(refresh,700); }
   if(document.readyState==='complete') later(); else window.addEventListener('load',later);
 })();
+</script>
 <!--RIDGELINE_INSTALL_END-->
 <!-- SW 版本更新提示(家族共用模組 fam-update v1,淺色稜線配色) -->
 <script>
