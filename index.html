@@ -123,6 +123,8 @@
   .diff-card.selected{border-color:var(--steel);background:var(--panel2);}
   /* ---------- 找碴 / 跨元素比較 ---------- */
   .qtype-tag{display:inline-block;font-size:.65rem;background:var(--panel2);color:var(--sub);padding:2px 8px;border-radius:8px;margin-bottom:8px;}
+  /* ---------- 鍵盤可操作的 div（role=button）焦點樣式 ---------- */
+  .zone-card:focus-visible, .inv-chip:focus-visible, .diff-card:focus-visible, .opt:focus-visible, .ov-cell.filled:focus-visible, .flashcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 </style>
 </head>
 <body>
@@ -453,20 +455,42 @@ function defaultState(){
     crystals:0
   };
 }
+function isPlainObject(v){ return !!v && typeof v==="object" && !Array.isArray(v); }
+function toNonNegInt(v){ const n = Math.floor(Number(v)); return Number.isFinite(n) ? Math.max(0, n) : 0; }
+function toMasteryLevel(v){ const n = Math.floor(Number(v)); return Number.isFinite(n) ? Math.min(MASTERY_MAX, Math.max(0, n)) : 0; }
+/* 存檔可能被舊版格式、手動修改或未來版本欄位污染，一律先「消毒」成保證合法的形狀再使用/寫回 */
+function normalizeState(raw){
+  const out = Object.assign(defaultState(), isPlainObject(raw) ? raw : {});
+  ["known","mastery","errorType","crafted","zoneCleared","inventory"].forEach(key=>{
+    out[key] = isPlainObject(out[key]) ? out[key] : {};
+  });
+  out.crystals = toNonNegInt(out.crystals);
+  out.lastZone = (typeof out.lastZone==="string" && ZONES.some(z=>z.key===out.lastZone)) ? out.lastZone : null;
+  const mastery = {};
+  Object.keys(out.mastery).forEach(sym=>{ mastery[sym] = toMasteryLevel(out.mastery[sym]); });
+  out.mastery = mastery;
+  const errorType = {};
+  Object.keys(out.errorType).forEach(sym=>{
+    const et = isPlainObject(out.errorType[sym]) ? out.errorType[sym] : {};
+    errorType[sym] = { symbol: toNonNegInt(et.symbol), category: toNonNegInt(et.category), equation: toNonNegInt(et.equation) };
+  });
+  out.errorType = errorType;
+  return out;
+}
 function loadState(){
-  try{ const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if(s) return Object.assign(defaultState(), s); }catch(e){}
+  try{ const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if(s) return normalizeState(s); }catch(e){}
   // v1 存檔遷移：舊版 key 的進度直接搬進 v2，避免更新後進度無聲歸零
   try{
     const old = JSON.parse(localStorage.getItem("elementquest_save_v1"));
     if(old && typeof old === "object"){
-      const m = Object.assign(defaultState(), old);
+      const m = normalizeState(old);
       localStorage.setItem(SAVE_KEY, JSON.stringify(m));
       return m;
     }
   }catch(e){}
   return defaultState();
 }
-function saveState(){ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+function saveState(){ state = normalizeState(state); localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
 
 function toast(msg, rare, ms){
   const t = document.getElementById("toast");
@@ -475,6 +499,20 @@ function toast(msg, rare, ms){
   t.classList.add("show");
   clearTimeout(toast._h);
   toast._h = setTimeout(()=>t.classList.remove("show"), ms || 2000);
+}
+
+/* 讓「可點擊的 div」也能用鍵盤操作（Tab 移到、Enter/Space 觸發），滑鼠 click 行為維持不變 */
+function makeClickable(el, handler, label){
+  el.setAttribute("role", "button");
+  el.tabIndex = 0;
+  if(label) el.setAttribute("aria-label", label);
+  el.addEventListener("click", handler);
+  el.addEventListener("keydown", e=>{
+    if(e.key==="Enter" || e.key===" " || e.key==="Spacebar"){
+      e.preventDefault();
+      handler(e);
+    }
+  });
 }
 
 /* ---------- Tabs ---------- */
@@ -514,7 +552,7 @@ function makeOvCell(sym, row){
   cell.innerHTML = `<span class="ov-sym">${e.sym}</span>${star}`;
   cell.title = `${e.zh}（${e.cat}）` + (EXAM_LIKELY.has(e.sym) ? " ⭐國中會考常見" : "");
   cell.dataset.sym = e.sym;
-  cell.addEventListener("click", ()=>showOvDetail(e, cell));
+  makeClickable(cell, ()=>showOvDetail(e, cell), `${e.zh}（${e.sym}）詳情`);
   return cell;
 }
 function renderOverview(){
@@ -617,7 +655,7 @@ function renderZones(){
       ${examCount>0 ? `<p class="small">⭐ ${examCount} 個國中會考常見</p>` : ""}
       <div class="progress-mini"><i style="width:${els.length? (known/els.length*100):0}%;background:${z.color}"></i></div>
     `;
-    if(unlocked) div.addEventListener("click", ()=>enterZone(z.key));
+    if(unlocked) makeClickable(div, ()=>enterZone(z.key), `前往${z.name}`);
     grid.appendChild(div);
   });
   updateHeaderStats();
@@ -674,9 +712,9 @@ function showMemCard(){
   document.getElementById("cardFact").textContent = e.fact;
   document.getElementById("memProgress").textContent = `剩 ${memQueue.length} 張待熟悉（${e.zh} / ${e.sym}）`;
 }
-document.getElementById("flashcard").addEventListener("click", ()=>{
+makeClickable(document.getElementById("flashcard"), ()=>{
   document.getElementById("flashcard").classList.toggle("flipped");
-});
+}, "翻面查看元素的應用小知識");
 document.getElementById("btnKnow").addEventListener("click", ()=>{
   const e = memQueue[memIdx % memQueue.length];
   if(!e) return;
@@ -723,7 +761,7 @@ function renderCraft(){
     const chip = document.createElement("div");
     chip.className = "inv-chip" + (craftSlots.includes(sym)?" selected":"");
     chip.textContent = `${sym} ${e.zh}` + (EXAM_LIKELY.has(sym)?" ⭐":"");
-    chip.addEventListener("click", ()=>selectCraftElement(sym));
+    makeClickable(chip, ()=>selectCraftElement(sym), `選擇 ${e.zh}（${sym}）加入合成槽`);
     grid.appendChild(chip);
   });
   document.getElementById("slotA").textContent = craftSlots[0] || "?";
@@ -813,11 +851,11 @@ function showDiffScreen(){
     const div = document.createElement("div");
     div.className = "diff-card" + (d.key===selected?" selected":"");
     div.innerHTML = `<b>${d.name}</b><div class="small">${d.desc}</div>`;
-    div.addEventListener("click", ()=>{
+    makeClickable(div, ()=>{
       selected = d.key;
       wrap.querySelectorAll(".diff-card").forEach(c=>c.classList.remove("selected"));
       div.classList.add("selected");
-    });
+    }, `選擇${d.name}`);
     wrap.appendChild(div);
   });
   document.getElementById("btnStartBattle").onclick = ()=>startBattle(currentZone, selected);
@@ -852,6 +890,121 @@ function pickWeighted(pool){
   return weighted[Math.floor(Math.random()*weighted.length)];
 }
 
+/* 反過來：給中文名，選正確符號（避免只認得單向配對） */
+function makeReverseSymbolQuestion(pool){
+  const e = pickWeighted(pool);
+  const others = ELEMENTS.filter(x=>x.sym!==e.sym);
+  const opts = [e.sym];
+  while(opts.length<4 && others.length>0){
+    const pick = others.splice(Math.floor(Math.random()*others.length),1)[0];
+    if(!opts.includes(pick.sym)) opts.push(pick.sym);
+  }
+  opts.sort(()=>Math.random()-0.5);
+  return { current:e, opts, answer:e.sym, qtext:`「${e.zh}」的元素符號是？`, errType:"symbol", qtype:"reverseSymbol" };
+}
+
+/* 分類辨識：這個元素屬於哪一族。「金屬／過渡金屬／放射性金屬」化學上不互斥（Fe 也是金屬），
+   不可互為干擾項，避免「程式唯一解、化學多重解」 */
+function makeCategoryQuestion(pool){
+  const CONFUSABLE = {"金屬":["過渡金屬","放射性金屬"], "過渡金屬":["金屬","放射性金屬"], "放射性金屬":["金屬","過渡金屬"]};
+  const e = pickWeighted(pool);
+  const allCats = Object.keys(CAT_COLOR).filter(c=>c!=="人工合成" && c!=="鑭系" && c!=="錒系");
+  const banned = CONFUSABLE[e.cat] || [];
+  const others = allCats.filter(c=>c!==e.cat && !banned.includes(c));
+  const opts = [e.cat];
+  const shuffledCats = others.slice().sort(()=>Math.random()-0.5);
+  while(opts.length<4 && shuffledCats.length>0) opts.push(shuffledCats.pop());
+  opts.sort(()=>Math.random()-0.5);
+  return { current:e, opts, answer:e.cat, qtext:`${e.sym}（${e.zh}）屬於哪一個分類？`, errType:"category", qtype:"category" };
+}
+
+/* 跨元素比較：同「分類」3個 + 不同分類 1個，找出「性質最不同」的那一個
+   (1) 金屬/過渡金屬/放射性金屬化學上都是金屬，視為同一組，避免「四個都是金屬」的爭議題
+   (2) 取材限「已背過的元素 ∪ 當前王國」，新手不會被問到還沒學的鑭系元素
+   找不到符合條件的分組時回傳 null，交給呼叫端 fallback 成其他題型 */
+function makeOddOneQuestion(pool, zoneKey){
+  const effCat = c => (c==="金屬"||c==="過渡金屬"||c==="放射性金屬") ? "金屬" : c;
+  const buildEligible = p => {
+    const cc = {};
+    p.forEach(e=>{ const c=effCat(e.cat); cc[c]=(cc[c]||0)+1; });
+    return Object.keys(cc).filter(c=>cc[c]>=3 && p.some(e=>effCat(e.cat)!==c));
+  };
+  let oddPool = ELEMENTS.filter(e=>state.known[e.sym] || e.zone===zoneKey);
+  let eligibleCats = buildEligible(oddPool);
+  if(eligibleCats.length===0){ oddPool = ELEMENTS; eligibleCats = buildEligible(oddPool); }
+  if(eligibleCats.length===0) return null;
+  const chosenCat = eligibleCats[Math.floor(Math.random()*eligibleCats.length)];
+  const sameCat = oddPool.filter(e=>effCat(e.cat)===chosenCat).sort(()=>Math.random()-0.5).slice(0,3);
+  const others = oddPool.filter(e=>effCat(e.cat)!==chosenCat);
+  const odd = others[Math.floor(Math.random()*others.length)];
+  const opts = sameCat.concat([odd]).sort(()=>Math.random()-0.5);
+  const catLabel = chosenCat==="金屬" ? "金屬家族（含過渡金屬）" : chosenCat;
+  return {
+    current: odd,
+    opts: opts.map(e=>`${e.sym} ${e.zh}`),
+    answer: `${odd.sym} ${odd.zh}`,
+    qtext: `哪一個元素跟其他三個「化學分類」不一樣？（提示：其他三個都是${catLabel}）`,
+    errType: "category",
+    qtype: "oddOne"
+  };
+}
+
+/* 找碴題的「錯誤元素」不能換出另一條化學上成立的方程式（例：Zn+2HCl 換成 Mg+2HCl 仍是正確反應）。
+   規則：換入的元素必須「金屬類⇄非金屬類」跨界（或用鈍氣——鈍氣幾乎不反應，本身就有教育意義），
+   且換完的組合不能是遊戲內任何真實配方。優先挑「材料含當前王國元素」的配方，讓找碴題更貼近正在闖的關卡；
+   沒有符合的才退回所有已學配方。找不到可用的錯誤元素/選項時回傳 null，交給呼叫端 fallback。 */
+function makeEquationQuestion(pool, zoneKey, madeRecipes){
+  const METALLIC = new Set(["鹼金屬","鹼土金屬","金屬","過渡金屬","放射性金屬","鑭系"]);
+  const zoneSyms = new Set(zoneElements(zoneKey).map(e=>e.sym));
+  const zoneRecipes = madeRecipes.filter(rc=>rc.r.some(s=>zoneSyms.has(s)));
+  const candidateRecipes = zoneRecipes.length>0 ? zoneRecipes : madeRecipes;
+  const recipe = candidateRecipes[Math.floor(Math.random()*candidateRecipes.length)];
+  const rightSym = recipe.r[Math.floor(Math.random()*recipe.r.length)];
+  const rightEl = ELEMENTS.find(e=>e.sym===rightSym);
+  const swappedIsRealRecipe = w => RECIPES.some(rc=>{
+    const a = recipe.r.map(s=>s===rightSym? w : s).slice().sort();
+    const b = rc.r.slice().sort();
+    return a.length===b.length && a.every((s,i)=>s===b[i]);
+  });
+  const wrongCandidates = ELEMENTS.filter(e =>
+    e.sym!==rightSym && !recipe.r.includes(e.sym)
+    && (e.cat==="鈍氣" || (METALLIC.has(rightEl.cat) ? !METALLIC.has(e.cat) : METALLIC.has(e.cat)))
+    && !swappedIsRealRecipe(e.sym));
+  const wrongSym = wrongCandidates.length ? wrongCandidates[Math.floor(Math.random()*wrongCandidates.length)].sym : null;
+  const optPool = ELEMENTS.filter(e=>e.sym!==rightSym && e.sym!==wrongSym && state.known[e.sym]);
+  if(!wrongSym || optPool.length<3) return null;
+  const fakeEq = recipe.eq.split(rightSym).join(wrongSym);
+  const opts = [rightSym];
+  const shuffledWrong = optPool.slice().sort(()=>Math.random()-0.5);
+  while(opts.length<4 && shuffledWrong.length>0){
+    const pick = shuffledWrong.pop().sym;
+    if(!opts.includes(pick) && pick!==wrongSym) opts.push(pick);
+  }
+  opts.sort(()=>Math.random()-0.5);
+  return {
+    current: rightEl,
+    opts,
+    answer: rightSym,
+    qtext: `找碴！這個反應式怪怪的：「${fakeEq}」，正確應該是哪個元素？`,
+    errType: "equation",
+    qtype: "equation"
+  };
+}
+
+/* 預設／fallback：符號 -> 中文名 辨識題 */
+function makeSymbolQuestion(pool){
+  const e = pickWeighted(pool);
+  const others = ELEMENTS.filter(x=>x.sym!==e.sym);
+  const opts = [e.zh];
+  while(opts.length<4 && others.length>0){
+    const pick = others.splice(Math.floor(Math.random()*others.length),1)[0];
+    if(!opts.includes(pick.zh)) opts.push(pick.zh);
+  }
+  opts.sort(()=>Math.random()-0.5);
+  return { current:e, opts, answer:e.zh, qtext:`${e.sym} 是什麼元素？`, errType:"symbol", qtype:"symbol" };
+}
+
+/* 決定題型並 fallback；實際出題邏輯都在上面各個 make*Question 函式 */
 function nextBattleQuestion(){
   battle.answered = false;
   battle.hintUsed = false;
@@ -865,126 +1018,19 @@ function nextBattleQuestion(){
   else if(r < 0.50) qtype = "reverseSymbol";
   else if(r < 0.68) qtype = "category";
 
-  battle.qtype = qtype;
+  let q = null;
+  if(qtype==="oddOne") q = makeOddOneQuestion(pool, battle.zone);
+  else if(qtype==="equation") q = makeEquationQuestion(pool, battle.zone, madeRecipes);
+  else if(qtype==="reverseSymbol") q = makeReverseSymbolQuestion(pool);
+  else if(qtype==="category") q = makeCategoryQuestion(pool);
+  if(!q) q = makeSymbolQuestion(pool);
 
-  if(qtype==="reverseSymbol"){
-    // 反過來：給中文名，選正確符號（避免只認得單向配對）
-    const e = pickWeighted(pool);
-    battle.current = e;
-    const others = ELEMENTS.filter(x=>x.sym!==e.sym);
-    const opts = [e.sym];
-    while(opts.length<4 && others.length>0){
-      const pick = others.splice(Math.floor(Math.random()*others.length),1)[0];
-      if(!opts.includes(pick.sym)) opts.push(pick.sym);
-    }
-    opts.sort(()=>Math.random()-0.5);
-    battle.opts = opts;
-    battle.answer = e.sym;
-    battle.qtext = `「${e.zh}」的元素符號是？`;
-    battle.errType = "symbol";
-    return;
-  }
-  if(qtype==="category"){
-    // 分類辨識：這個元素屬於哪一族
-    // 「金屬／過渡金屬／放射性金屬」化學上不互斥（Fe 也是金屬），不可互為干擾項，避免「程式唯一解、化學多重解」
-    const CONFUSABLE = {"金屬":["過渡金屬","放射性金屬"], "過渡金屬":["金屬","放射性金屬"], "放射性金屬":["金屬","過渡金屬"]};
-    const e = pickWeighted(pool);
-    battle.current = e;
-    const allCats = Object.keys(CAT_COLOR).filter(c=>c!=="人工合成" && c!=="鑭系" && c!=="錒系");
-    const banned = CONFUSABLE[e.cat] || [];
-    const others = allCats.filter(c=>c!==e.cat && !banned.includes(c));
-    const opts = [e.cat];
-    const shuffledCats = others.slice().sort(()=>Math.random()-0.5);
-    while(opts.length<4 && shuffledCats.length>0) opts.push(shuffledCats.pop());
-    opts.sort(()=>Math.random()-0.5);
-    battle.opts = opts;
-    battle.answer = e.cat;
-    battle.qtext = `${e.sym}（${e.zh}）屬於哪一個分類？`;
-    battle.errType = "category";
-    return;
-  }
-
-  if(qtype==="oddOne"){
-    // 跨元素比較：同「分類」3個 + 不同分類 1個，找出「性質最不同」的那一個
-    // (1) 金屬/過渡金屬/放射性金屬化學上都是金屬，視為同一組，避免「四個都是金屬」的爭議題
-    // (2) 取材限「已背過的元素 ∪ 當前王國」，新手不會被問到還沒學的鑭系元素
-    const effCat = c => (c==="金屬"||c==="過渡金屬"||c==="放射性金屬") ? "金屬" : c;
-    const buildEligible = pool => {
-      const cc = {};
-      pool.forEach(e=>{ const c=effCat(e.cat); cc[c]=(cc[c]||0)+1; });
-      return Object.keys(cc).filter(c=>cc[c]>=3 && pool.some(e=>effCat(e.cat)!==c));
-    };
-    let oddPool = ELEMENTS.filter(e=>state.known[e.sym] || e.zone===battle.zone);
-    let eligibleCats = buildEligible(oddPool);
-    if(eligibleCats.length===0){ oddPool = ELEMENTS; eligibleCats = buildEligible(oddPool); }
-    if(eligibleCats.length===0){ qtype = battle.qtype = "symbol"; }
-    else {
-      const chosenCat = eligibleCats[Math.floor(Math.random()*eligibleCats.length)];
-      const sameCat = oddPool.filter(e=>effCat(e.cat)===chosenCat).sort(()=>Math.random()-0.5).slice(0,3);
-      const others = oddPool.filter(e=>effCat(e.cat)!==chosenCat);
-      const odd = others[Math.floor(Math.random()*others.length)];
-      const opts = sameCat.concat([odd]).sort(()=>Math.random()-0.5);
-      const catLabel = chosenCat==="金屬" ? "金屬家族（含過渡金屬）" : chosenCat;
-      battle.current = odd;
-      battle.opts = opts.map(e=>`${e.sym} ${e.zh}`);
-      battle.answer = `${odd.sym} ${odd.zh}`;
-      battle.qtext = `哪一個元素跟其他三個「化學分類」不一樣？（提示：其他三個都是${catLabel}）`;
-      battle.errType = "category";
-      return;
-    }
-  }
-  if(qtype==="equation"){
-    // 找碴題的「錯誤元素」不能換出另一條化學上成立的方程式（例：Zn+2HCl 換成 Mg+2HCl 仍是正確反應）。
-    // 規則：換入的元素必須「金屬類⇄非金屬類」跨界（或用鈍氣——鈍氣幾乎不反應，本身就有教育意義），
-    // 且換完的組合不能是遊戲內任何真實配方。
-    const METALLIC = new Set(["鹼金屬","鹼土金屬","金屬","過渡金屬","放射性金屬","鑭系"]);
-    const recipe = madeRecipes[Math.floor(Math.random()*madeRecipes.length)];
-    const rightSym = recipe.r[Math.floor(Math.random()*recipe.r.length)];
-    const rightEl = ELEMENTS.find(e=>e.sym===rightSym);
-    const swappedIsRealRecipe = w => RECIPES.some(rc=>{
-      const a = recipe.r.map(s=>s===rightSym? w : s).slice().sort();
-      const b = rc.r.slice().sort();
-      return a.length===b.length && a.every((s,i)=>s===b[i]);
-    });
-    const wrongCandidates = ELEMENTS.filter(e =>
-      e.sym!==rightSym && !recipe.r.includes(e.sym)
-      && (e.cat==="鈍氣" || (METALLIC.has(rightEl.cat) ? !METALLIC.has(e.cat) : METALLIC.has(e.cat)))
-      && !swappedIsRealRecipe(e.sym));
-    const wrongSym = wrongCandidates.length ? wrongCandidates[Math.floor(Math.random()*wrongCandidates.length)].sym : null;
-    const optPool = ELEMENTS.filter(e=>e.sym!==rightSym && e.sym!==wrongSym && state.known[e.sym]);
-    if(!wrongSym || optPool.length<3){ battle.qtype="symbol"; }
-    else {
-      const fakeEq = recipe.eq.split(rightSym).join(wrongSym);
-      const opts = [rightSym];
-      const shuffledWrong = optPool.slice().sort(()=>Math.random()-0.5);
-      while(opts.length<4 && shuffledWrong.length>0){
-        const pick = shuffledWrong.pop().sym;
-        if(!opts.includes(pick) && pick!==wrongSym) opts.push(pick);
-      }
-      opts.sort(()=>Math.random()-0.5);
-      battle.current = rightEl;
-      battle.opts = opts;
-      battle.answer = rightSym;
-      battle.qtext = `找碴！這個反應式怪怪的：「${fakeEq}」，正確應該是哪個元素？`;
-      battle.errType = "equation";
-      return;
-    }
-  }
-  // 預設：符號 -> 中文名 辨識題
-  const e = pickWeighted(pool);
-  battle.current = e;
-  const others = ELEMENTS.filter(x=>x.sym!==e.sym);
-  const opts = [e.zh];
-  while(opts.length<4 && others.length>0){
-    const pick = others.splice(Math.floor(Math.random()*others.length),1)[0];
-    if(!opts.includes(pick.zh)) opts.push(pick.zh);
-  }
-  opts.sort(()=>Math.random()-0.5);
-  battle.opts = opts;
-  battle.answer = e.zh;
-  battle.qtext = `${e.sym} 是什麼元素？`;
-  battle.errType = "symbol";
-  battle.qtype = "symbol";
+  battle.current = q.current;
+  battle.opts = q.opts;
+  battle.answer = q.answer;
+  battle.qtext = q.qtext;
+  battle.errType = q.errType;
+  battle.qtype = q.qtype;
 }
 
 const QTYPE_LABEL = {symbol:"🔎 辨識", reverseSymbol:"🔁 反向辨識", category:"🏷️ 分類", oddOne:"🧩 跨元素比較", equation:"🐛 找碴"};
@@ -1004,7 +1050,7 @@ function renderBattle(){
     const b = document.createElement("div");
     b.className = "opt";
     b.textContent = o;
-    b.addEventListener("click", ()=>answerBattle(o, b));
+    makeClickable(b, ()=>answerBattle(o, b), `選項：${o}`);
     optsDiv.appendChild(b);
   });
   // 結晶消耗出口：花 3 顆排除兩個錯誤選項
@@ -1014,7 +1060,7 @@ function renderBattle(){
     hint.id = "battleHintBtn";
     hint.style.cssText = "opacity:.85;font-size:13px;border-style:dashed";
     hint.textContent = `💎 提示：花 3 顆結晶排除兩個錯誤選項（現有 ${state.crystals||0} 顆）`;
-    hint.addEventListener("click", useBattleHint);
+    makeClickable(hint, useBattleHint, "花 3 顆結晶排除兩個錯誤選項");
     optsDiv.appendChild(hint);
   }
   document.getElementById("battleLog").textContent = `幫元素之靈想起自己的身份，牠就會安心歸位（熟練度需達 ${MASTERY_TARGET}/${MASTERY_MAX}）`;
@@ -1116,12 +1162,12 @@ function showBattleResult(allGraduated){
   again.className = "opt";
   again.style.cssText = "font-weight:800";
   again.textContent = allGraduated ? "⚔️ 換個難度再玩一場" : "⚔️ 再挑戰一次，衝破關！";
-  again.addEventListener("click", showDiffScreen);
+  makeClickable(again, showDiffScreen, again.textContent);
   optsDiv.appendChild(again);
   const back = document.createElement("div");
   back.className = "opt";
   back.textContent = "🗺️ 回地圖選其他王國";
-  back.addEventListener("click", ()=>switchTab("map"));
+  makeClickable(back, ()=>switchTab("map"), back.textContent);
   optsDiv.appendChild(back);
   document.getElementById("battleLog").textContent = allGraduated
     ? "🎆 恭喜！可以去挑戰下一個王國，或提高難度賺更多結晶"

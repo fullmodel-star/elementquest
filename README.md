@@ -20,5 +20,12 @@ RPG 風格的國中元素週期表學習遊戲，單檔 HTML、可離線、可�
 - repo：`fullmodel-star/elementquest`（Public，`master` 分支）
 - 純靜態，git push 即部署，無 CI
 
+## 本機檢查
+沒有 build 流程，但改動 `index.html` 裡的元素/王國/配方資料或出題邏輯後，建議跑：
+```
+node scripts/verify-game-data.js
+```
+會檢查 ELEMENTS/FULL_ELEMENTS/ZONES/RECIPES 的數量、符號重複、zone 對應、配方材料與組合是否合法，並實際呼叫 `nextBattleQuestion()` 模擬 2000 題，確認每題答案都在選項內、選項不重複。
+
 ## 設計依據
 本作教學範圍（56元素/46配方/5題型/⭐必考標記）是根據國中理化老師、國中生玩家、學習科學教授三方實測意見反覆調整過的版本，細節見 git commit 歷史。2026-08-18 對外發布前完成化學專家逐項內容審查（56卡零事實錯誤、46配方全配平）＋學生視角全功能實測（node 模擬 2000+ 次抽題零錯誤），審修內容見 更新記錄.md。
