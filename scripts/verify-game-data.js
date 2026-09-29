@@ -118,28 +118,66 @@ RECIPES.forEach(function(r){
 // 這樣即使有人改掉程式裡的過濾條件或清單，這裡仍會獨立抓到
 var __eqErrors = [];
 var __eqCombos = 0;
+var __eqDistractors = 0;
 var __eqNoCandidate = [];
+var KNOWN_REAL = ('B2O3 As2O3 Sb2O3 BCl3 PCl3 AsCl3 SbCl3 CCl4 SiCl4 GeCl4 TeCl4 SeCl4 GeCl2 TeCl2 SeCl2 SCl2 ' +
+  'CeO2 PbO2 PtO2 UO2 WO2 GeO2 SeO2 TeO2 GeO GeS AsS XeF2 KrF2 GeF2 OF2 F2O NO NO2 N2O N2O3 NCl3 Cl2O ClO2 Br2O ' +
+  'H2S HI ICl ClI ICl3 BrCl FCl BrI Li2O Cu2O Ag2O Rb2O Cs2O LiCl CuCl AgCl AuCl CsCl RbCl InCl NLi3 AlH3 UH3 ' +
+  'CsO2 RbO2 HLi HNa HK HCs HRb').split(' ');
+var SUBMAP = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
+function ascii(s){ return s.replace(/[₀-₉]/g, function(c){ return SUBMAP[c]; }); }
+// 常見氧化數：本腳本自己的一份（與 index.html 的 OX_POS/OX_NEG 分開維護）
+var V_POS = {H:[1],Li:[1],Na:[1],K:[1],Rb:[1],Cs:[1],Be:[2],Mg:[2],Ca:[2],Sr:[2],Ba:[2],Al:[3],Ga:[3],In:[1,3],Sn:[2,4],Pb:[2,4],Bi:[3,5],
+  Fe:[2,3],Cu:[1,2],Zn:[2],Ag:[1],Au:[1,3],Hg:[1,2],W:[4,6],Ni:[2,3],Cr:[2,3,6],Ti:[2,3,4],Pt:[2,4],Co:[2,3],Mn:[2,3,4,7],La:[3],Ce:[3,4],Nd:[3],U:[3,4,6],
+  C:[2,4],N:[1,2,3,4,5],S:[1,2,4,6],P:[3,5],Se:[4,6],Te:[4,6],B:[3],Si:[4],Ge:[2,4],As:[3,5],Sb:[3,5],Cl:[1,3,5,7],Br:[1,3,5],I:[1,3,5,7],Xe:[2,4,6],Kr:[2],O:[2]};
+var V_NEG = {H:[1],C:[4],N:[3],O:[2],F:[1],Cl:[1],Br:[1],I:[1],S:[2],Se:[2],Te:[2],P:[3],As:[3],Sb:[3],B:[3],Si:[4],Ge:[4]};
+function verifyChargeOk(prod){
+  var m = {}; prod.replace(/([A-Z][a-z]?)(\\d*)/g, function(x, el, n){ m[el] = (m[el]||0) + (n ? +n : 1); return x; });
+  var ks = Object.keys(m); if(ks.length !== 2) return false;
+  function fit(P, N){ return (V_POS[P]||[]).some(function(a){ return (V_NEG[N]||[]).some(function(b){ return m[P]*a === m[N]*b; }); }); }
+  return fit(ks[0], ks[1]) || fit(ks[1], ks[0]);
+}
+// 換成 sym 後若「可能成立」回傳原因，否則回傳 null
+function verifySwapReal(recipe, rightSym, sym){
+  var swapped = recipe.r.map(function(s){ return s===rightSym ? sym : s; }).sort().join(',');
+  if(RECIPES.some(function(rc){ return rc.r.slice().sort().join(',') === swapped; })) return '會變成遊戲內另一條配方';
+  var fake = recipe.eq.split(rightSym).join(sym);
+  var prod = ascii(fake.split('→')[1]).trim().replace(/^\\d+\\s*/, '');
+  if(KNOWN_REAL.indexOf(prod) !== -1) return '是真實存在的化合物';
+  if(verifyChargeOk(prod)) return '可用常見氧化數配出電荷平衡';
+  return null;
+}
 (function(){
-  var KNOWN_REAL = ('B2O3 As2O3 Sb2O3 BCl3 PCl3 AsCl3 SbCl3 CCl4 SiCl4 GeCl4 TeCl4 SeCl4 GeCl2 TeCl2 SeCl2 SCl2 ' +
-    'CeO2 PbO2 PtO2 UO2 WO2 GeO2 SeO2 TeO2 GeO GeS AsS XeF2 KrF2 GeF2 OF2 F2O NO NO2 N2O N2O3 NCl3 Cl2O ClO2 Br2O ' +
-    'H2S HI ICl ClI ICl3 BrCl FCl BrI Li2O Cu2O Ag2O Rb2O Cs2O LiCl CuCl AgCl AuCl CsCl RbCl InCl NLi3 AlH3 UH3 ' +
-    'CsO2 RbO2 HLi HNa HK HCs HRb').split(' ');
-  var SUB = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
-  function ascii(s){ return s.replace(/[₀-₉]/g, function(c){ return SUB[c]; }); }
   RECIPES.filter(function(r){ return r.type==='reaction'; }).forEach(function(recipe){
     recipe.r.forEach(function(rightSym){
       var cands = equationWrongCandidates(recipe, rightSym);
       if(cands.length===0) __eqNoCandidate.push(recipe.name + '（換 ' + rightSym + '）');
       cands.forEach(function(w){
         __eqCombos++;
-        var fake = recipe.eq.split(rightSym).join(w.sym);
-        var prod = ascii(fake.split('→')[1]).trim().replace(/^\\d+\\s*/, '');
-        if(KNOWN_REAL.indexOf(prod) !== -1) __eqErrors.push('「' + fake + '」是真實存在的化學反應，不能當找碴題（原配方：' + recipe.name + '）');
+        var why = verifySwapReal(recipe, rightSym, w.sym);
+        if(why) __eqErrors.push('錯誤元素：「' + recipe.eq.split(rightSym).join(w.sym) + '」' + why + '，不能當找碴題（原配方：' + recipe.name + '）');
         if(new RegExp(rightSym + '[a-z]').test(recipe.eq.replace(new RegExp(rightSym + '(?![a-z])','g'), ''))) __eqErrors.push(recipe.name + '：換 ' + rightSym + ' 時會誤換到其他元素符號的一部分');
       });
+      // 干擾選項：程式允許出現的每一個元素，代回去都必須是錯的，否則會有第二個正確答案
+      ELEMENTS.forEach(function(e){
+        if(!equationSwapIsInvalid(recipe, rightSym, e.sym)) return;
+        __eqDistractors++;
+        var why = verifySwapReal(recipe, rightSym, e.sym);
+        if(why) __eqErrors.push('干擾選項：「' + recipe.eq.split(rightSym).join(e.sym) + '」' + why + '，會變成第二個正確答案（原配方：' + recipe.name + '）');
+      });
+      if(ELEMENTS.filter(function(e){ return equationSwapIsInvalid(recipe, rightSym, e.sym); }).length < 4) __eqNoCandidate.push(recipe.name + '（換 ' + rightSym + '，可用選項不足 4）');
     });
   });
 })();
+// 分類歸屬（本腳本獨立判斷）：某個選項若也能正確描述這個元素，就是第二個正確答案
+var ALSO_TRUE = {'鹼金屬':['金屬'], '鹼土金屬':['金屬'], '過渡金屬':['金屬'], '放射性金屬':['金屬','過渡金屬'], '鑭系':['金屬','過渡金屬'],
+  '鹵素':['非金屬'], '鈍氣':['非金屬'], '類金屬':['金屬','非金屬'], '非金屬':['類金屬'], '金屬':['類金屬']};
+var METALS_V = ['鹼金屬','鹼土金屬','金屬','過渡金屬','放射性金屬','鑭系'];
+function fitsHint(cat, hint){
+  if(hint.indexOf('金屬家族') === 0) return METALS_V.indexOf(cat) !== -1 || cat === '類金屬';
+  if(hint === '非金屬') return ['非金屬','鹵素','鈍氣','類金屬'].indexOf(cat) !== -1;
+  return cat === hint;
+}
 
 // ---------- 出題模擬：讓每個王國都在「已學完全部教學元素」狀態下，實際呼叫 nextBattleQuestion 兩千次 ----------
 var __simErrors = [];
@@ -167,6 +205,25 @@ var __simCount = 0;
     battle.opts.forEach(function(o){ if(uniq[o]) dup = true; uniq[o] = true; });
     if(dup) __simErrors.push(tag + '：opts 有重複選項 → ' + JSON.stringify(battle.opts));
     if(battle.opts.length < 2 || battle.opts.length > 4) __simErrors.push(tag + '：opts 數量不合理（' + battle.opts.length + '）');
+    // 答案唯一性：用本腳本的規則檢查「其他選項有沒有也是對的」
+    if(battle.qtype === 'category'){
+      var also = ALSO_TRUE[battle.answer] || [];
+      battle.opts.forEach(function(o){ if(o !== battle.answer && also.indexOf(o) !== -1) __simErrors.push(tag + '：「' + battle.qtext + '」選項「' + o + '」也算對'); });
+    }
+    if(battle.qtype === 'oddOne'){
+      var hint = (battle.qtext.match(/其他三個都是(.+)）$/) || [])[1];
+      if(!hint) __simErrors.push(tag + '：找不到提示文字');
+      else if(fitsHint(battle.current.cat, hint)) __simErrors.push(tag + '：落單的 ' + battle.current.sym + '（' + battle.current.cat + '）也符合提示「' + hint + '」');
+    }
+    if(battle.qtype === 'equation'){
+      var m = battle.qtext.match(/「(.+)」/);
+      var rc = m && RECIPES.find(function(r){
+        return r.type==='reaction' && r.r.indexOf(battle.answer) !== -1
+          && ELEMENTS.some(function(w){ return r.eq.split(battle.answer).join(w.sym) === m[1]; });
+      });
+      if(!rc) __simErrors.push(tag + '：找不到題目對應的配方');
+      else battle.opts.forEach(function(o){ if(o === battle.answer) return; var why = verifySwapReal(rc, battle.answer, o); if(why) __simErrors.push(tag + '：選項 ' + o + ' 代回去「' + rc.eq.split(battle.answer).join(o) + '」' + why); });
+    }
   }
 })();
 `;
@@ -192,6 +249,7 @@ const simCount = sandbox.__simCount || 0;
 const qtypeCounts = sandbox.__qtypeCounts || {};
 const eqErrors = sandbox.__eqErrors || [];
 const eqCombos = sandbox.__eqCombos || 0;
+const eqDistractors = sandbox.__eqDistractors || 0;
 const eqNoCandidate = sandbox.__eqNoCandidate || [];
 
 console.log('=== 資料檢查 ===');
@@ -210,10 +268,10 @@ if (simErrors.length === 0) {
   if (simErrors.length > 30) console.log(`...其餘 ${simErrors.length - 30} 筆省略`);
 }
 
-console.log('\n=== 找碴題窮舉（' + eqCombos + ' 種換法） ===');
-if (eqCombos === 0) eqErrors.push('窮舉到 0 種換法，檢查沒有實際執行');
+console.log('\n=== 找碴題窮舉（錯誤元素 ' + eqCombos + ' 種、干擾選項 ' + eqDistractors + ' 種） ===');
+if (eqCombos === 0 || eqDistractors === 0) eqErrors.push('窮舉到 0 種換法，檢查沒有實際執行');
 if (eqErrors.length === 0) {
-  console.log('✅ 沒有任何一種換法會變成真實存在的化學反應');
+  console.log('✅ 錯誤元素和干擾選項代回去都不會變成成立的反應');
 } else {
   eqErrors.slice(0, 30).forEach(msg => console.log('❌ ' + msg));
   if (eqErrors.length > 30) console.log(`...其餘 ${eqErrors.length - 30} 筆省略`);

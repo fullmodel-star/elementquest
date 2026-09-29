@@ -34,7 +34,7 @@
   nav.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
   nav.tabs button{flex:1;min-width:90px;padding:10px 6px;border:1px solid transparent;border-radius:10px;background:var(--panel);color:var(--sub);font-weight:bold;cursor:pointer;transition:.15s;font-size:.85rem;}
   nav.tabs button.active{background:var(--panel2);color:var(--snow);border-color:var(--steel);}
-  nav.tabs button:disabled{opacity:.35;cursor:not-allowed;}
+  nav.tabs button:disabled, nav.tabs button.locked{opacity:.35;cursor:not-allowed;}
   section{display:none;}
   section.active{display:block;}
   .zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;}
@@ -225,9 +225,9 @@
   <nav class="tabs">
     <button data-tab="overview" class="active">🧭 全貌總覽</button>
     <button data-tab="map">🗺️ 地圖</button>
-    <button data-tab="memorize" disabled>📖 背誦</button>
-    <button data-tab="craft" disabled>⚗️ 合成台</button>
-    <button data-tab="battle" disabled>⚔️ 王國試煉</button>
+    <button data-tab="memorize" class="locked" aria-disabled="true">📖 背誦</button>
+    <button data-tab="craft" class="locked" aria-disabled="true">⚗️ 合成台</button>
+    <button data-tab="battle" class="locked" aria-disabled="true">⚔️ 王國試煉</button>
     <button data-tab="lab">🔬 研究室</button>
   </nav>
 
@@ -426,7 +426,7 @@ const CATEGORY_INFO = {
   "鹼土金屬":{emoji:"🪨", fact:"鹼土金屬，最外層有2個電子，性質比鹼金屬穩定一些，常見於礦物與骨骼中。"},
   "過渡金屬":{emoji:"⚙️", fact:"過渡金屬，通常硬度高、導電導熱佳，是製造合金與工業器具的重要材料。"},
   "金屬":{emoji:"🔩", fact:"金屬元素，具有金屬光澤與延展性，常用於日常器具與工業製品。"},
-  "類金屬":{emoji:"🔬", fact:"類金屬，介於金屬與非金屬之間，常用於半導體與電子材料。"},
+  "類金屬":{emoji:"🔬", fact:"類金屬，性質介於金屬與非金屬之間；其中的矽、鍺是半導體與電子材料的重要原料。"},
   "非金屬":{emoji:"🧬", fact:"非金屬元素，通常不具金屬光澤，在生物與化學反應中扮演重要角色。"},
   "鹵素":{emoji:"🧪", fact:"鹵素，化學性質活潑，容易與金屬反應形成鹽類化合物。"},
   "鈍氣":{emoji:"💫", fact:"鈍氣（惰性氣體），化學性質非常穩定，很少與其他元素發生反應。"},
@@ -686,8 +686,6 @@ const BALANCE_EXTRA = [
  {id:"x-na-water", name:"鈉與水反應", lhs:["Na","H₂O"], rhs:["NaOH","H₂"], ans:[2,2,2,1]},
  {id:"x-zn-hcl", name:"鋅與鹽酸產生氫氣", lhs:["Zn","HCl"], rhs:["ZnCl₂","H₂"], ans:[1,2,1,1]},
  {id:"x-marble", name:"大理石加鹽酸製二氧化碳", lhs:["CaCO₃","HCl"], rhs:["CaCl₂","H₂O","CO₂"], ans:[1,2,1,1,1]},
- {id:"x-limewater", name:"二氧化碳讓石灰水變混濁", lhs:["CO₂","Ca(OH)₂"], rhs:["CaCO₃","H₂O"], ans:[1,1,1,1]},
- {id:"x-neutral", name:"酸鹼中和", lhs:["NaOH","HCl"], rhs:["NaCl","H₂O"], ans:[1,1,1,1]},
  {id:"x-methane", name:"天然氣（甲烷）燃燒", lhs:["CH₄","O₂"], rhs:["CO₂","H₂O"], ans:[1,2,1,2]},
  {id:"x-propane", name:"桶裝瓦斯（丙烷）燃燒", lhs:["C₃H₈","O₂"], rhs:["CO₂","H₂O"], ans:[1,5,3,4]},
  {id:"x-ethanol", name:"酒精燃燒", lhs:["C₂H₅OH","O₂"], rhs:["CO₂","H₂O"], ans:[1,3,2,3]},
@@ -720,7 +718,8 @@ function defaultState(){
     lastZone:null,   // 上次進入的王國，重新整理後自動恢復三個分頁
     crystals:0,
     labSolved:{},    // 偵探案件 id -> true
-    balanceSolved:{} // 配平題 id -> true
+    balanceSolved:{}, // 配平題 id -> true
+    balanceRevealed:{} // 看過答案的配平題 id -> true（之後自己解出來也不給結晶）
   };
 }
 function isPlainObject(v){ return !!v && typeof v==="object" && !Array.isArray(v); }
@@ -729,7 +728,7 @@ function toMasteryLevel(v){ const n = Math.floor(Number(v)); return Number.isFin
 /* 存檔可能被舊版格式、手動修改或未來版本欄位污染，一律先「消毒」成保證合法的形狀再使用/寫回 */
 function normalizeState(raw){
   const out = Object.assign(defaultState(), isPlainObject(raw) ? raw : {});
-  ["known","mastery","errorType","crafted","zoneCleared","inventory","labSolved","balanceSolved"].forEach(key=>{
+  ["known","mastery","errorType","crafted","zoneCleared","inventory","labSolved","balanceSolved","balanceRevealed"].forEach(key=>{
     out[key] = isPlainObject(out[key]) ? out[key] : {};
   });
   out.crystals = toNonNegInt(out.crystals);
@@ -786,10 +785,12 @@ function makeClickable(el, handler, label){
 /* ---------- Tabs ---------- */
 const tabs = document.querySelectorAll("nav.tabs button");
 tabs.forEach(b=>b.addEventListener("click", ()=>{
-  if(b.disabled) return;
+  if(b.classList.contains("locked")){ toast("先到「🗺️ 地圖」選一個王國，才能開始背誦、合成和試煉喔！"); return; }
   switchTab(b.dataset.tab);
 }));
 function switchTabBase(name){
+  const nav = document.querySelector("nav.tabs");
+  if(nav.getBoundingClientRect().top < 0) nav.scrollIntoView({block:"start"});
   tabs.forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
   document.querySelectorAll("section").forEach(s=>s.classList.toggle("active", s.id==="tab-"+name));
   if(name==="map") renderZones();
@@ -880,10 +881,11 @@ function showOvDetail(e, cellEl){
     actionHtml = `<span class="ov-detail-cat" style="background:${CAT_COLOR[e.cat]}">${e.cat}・${zoneName}</span>
       <ul>${bullets}</ul>
       <div class="btn-row" style="justify-content:flex-start;margin-top:10px;">
-        <button class="action secondary" id="ovDetailGo">🗺️ 前往這個王國</button>
+        <button class="action secondary" id="ovDetailGo">${isZoneUnlocked(e.zone) ? "🗺️ 前往這個王國" : `🔒 需先合成 ${BOSS_UNLOCK} 樣物品才能進入`}</button>
       </div>`;
   } else {
     actionHtml = `<span class="ov-detail-cat" style="background:${CAT_COLOR[e.cat]}">${e.cat}</span>
+      <p class="small" style="margin:6px 0 0;">這一類元素的共同特色：</p>
       <ul>${bullets}</ul>
       <p class="small" style="margin-top:8px;">🔬 這個元素目前還不在王國試煉的教學範圍內，之後可能會加入喔！</p>`;
   }
@@ -896,7 +898,9 @@ function showOvDetail(e, cellEl){
   detail.classList.add("show");
   if(isTaught){
     document.getElementById("ovDetailGo").addEventListener("click", ()=>{
-      enterZone(e.zone);
+      if(enterZone(e.zone)===false) return;
+      const i = memQueue.findIndex(x=>x.sym===e.sym);
+      if(i>=0){ memIdx = i; showMemCard(); }
       switchTab("memorize");
     });
   }
@@ -934,16 +938,18 @@ function renderZones(){
       <div class="progress-mini"><i style="width:${els.length? (known/els.length*100):0}%;background:${z.color}"></i></div>
     `;
     if(unlocked) makeClickable(div, ()=>enterZone(z.key), `前往${z.name}`);
+    else makeClickable(div, ()=>toast(`🔒 先合成 ${BOSS_UNLOCK} 樣物品才能挑戰這個王國（目前 ${Object.keys(state.crafted).length} 樣）`), `${z.name}（尚未解鎖）`);
     grid.appendChild(div);
   });
   updateHeaderStats();
 }
 
 function enterZone(key){
+  if(!isZoneUnlocked(key)){ toast(`🔒 這個王國要先合成 ${BOSS_UNLOCK} 樣物品才能進入`); return false; }
   currentZone = key;
   state.lastZone = key;
   saveState();
-  tabs.forEach(b=>{ if(["memorize","craft","battle"].includes(b.dataset.tab)) b.disabled=false; });
+  tabs.forEach(b=>{ if(["memorize","craft","battle"].includes(b.dataset.tab)) { b.classList.remove("locked"); b.removeAttribute("aria-disabled"); } });
   startMemorize(key);
   switchTab("memorize");
 }
@@ -977,6 +983,7 @@ function showMemCard(){
     document.getElementById("cardEmoji").textContent = "🎉";
     document.getElementById("cardSym").textContent = "";
     document.getElementById("cardZh").textContent = "本區已全部背熟！";
+    document.getElementById("cardFact").textContent = "這一區的元素你都認識了！可以去合成台組合它們，或到王國試煉檢驗自己記得多牢。";
     document.getElementById("cardCat").textContent = "";
     document.getElementById("cardExam").textContent = "";
     document.getElementById("memProgress").textContent = "前往合成台或王國試煉吧，或重新複習一次翻牌";
@@ -997,7 +1004,10 @@ function showMemCard(){
 makeClickable(document.getElementById("flashcard"), ()=>{
   document.getElementById("flashcard").classList.toggle("flipped");
 }, "翻面查看元素的應用小知識");
+let memCooldown = false;
+function memTap(){ if(memCooldown) return false; memCooldown = true; setTimeout(()=>{ memCooldown = false; }, 400); return true; }
 document.getElementById("btnKnow").addEventListener("click", ()=>{
+  if(!memTap()) return;
   const e = memQueue[memIdx % memQueue.length];
   if(!e) return;
   state.known[e.sym] = true;
@@ -1010,6 +1020,7 @@ document.getElementById("btnKnow").addEventListener("click", ()=>{
   updateHeaderStats();
 });
 document.getElementById("btnAgain").addEventListener("click", ()=>{
+  if(!memTap()) return;
   memIdx = (memIdx+1) % Math.max(memQueue.length,1);
   showMemCard();
 });
@@ -1059,6 +1070,7 @@ function renderCraft(){
   document.getElementById("slotA").textContent = craftSlots[0] || "?";
   document.getElementById("slotB").textContent = craftSlots[1] || "?";
   document.getElementById("slotD").textContent = craftSlots[2] || "-";
+  if(!craftBusy) document.getElementById("slotC").textContent = "?";
   document.getElementById("slotA").classList.toggle("filled", craftSlots.length>0);
   document.getElementById("slotB").classList.toggle("filled", craftSlots.length>1);
   document.getElementById("slotD").classList.toggle("filled", craftSlots.length>2);
@@ -1104,6 +1116,9 @@ document.getElementById("btnCraft").addEventListener("click", ()=>{
     const isAlloy = recipe.type==="alloy";
     if(!state.crafted[recipe.product]){
       state.crafted[recipe.product] = true;
+      const {made, total} = craftCollectionStats();
+      document.getElementById("craftCollectProgress").textContent = `🧪 合成圖鑑：已合成 ${made}/${total}`;
+      document.getElementById("craftCollectBar").style.width = (made/total*100)+"%";
       const hasStar = recipe.r.some(s=>EXAM_LIKELY.has(s));
       const rarityChance = recipe.rarity==="legendary" ? 0.9 : recipe.rarity==="rare" ? 0.5 : 0.1;
       const bonusChance = hasStar ? rarityChance + 0.15 : rarityChance;
@@ -1209,7 +1224,7 @@ function buyRecipeClue(){
   const recipe = notCrafted[Math.floor(Math.random()*notCrafted.length)];
   const clueSym = recipe.r[Math.floor(Math.random()*recipe.r.length)];
   const msg = recipe.type==="alloy"
-    ? `🔍 神秘線索：嘗試將【${clueSym}】與其他金屬混合，似乎能鍛造出高級合金...`
+    ? `🔍 神秘線索：嘗試將【${clueSym}】與${["非金屬","類金屬"].includes((ELEMENTS.find(x=>x.sym===clueSym)||{}).cat) ? "" : "其他"}金屬混合，似乎能鍛造出高級合金...`
     : `🔍 反應線索：某個化學反應需要【${clueSym}】作為材料，試試看能組出什麼！`;
   saveState();
   updateHeaderStats();
@@ -1227,6 +1242,7 @@ function bumpErrorType(sym, type){
 }
 
 function showDiffScreen(){
+  if(battle) battle.active = false;
   const z = ZONES.find(zz=>zz.key===currentZone);
   document.getElementById("diffScreen").style.setProperty("--zc", z.color);
   document.getElementById("diffScreen").style.display = "block";
@@ -1260,7 +1276,8 @@ function startBattle(zoneKey, diffKey){
     pool: pool,
     current: null,
     qtype: null,
-    wrongElements: [] // P1-1：這場試煉答錯過的元素符號（去重），戰敗結算畫面要複盤用
+    wrongElements: [], // P1-1：這場試煉答錯過的元素符號（去重），戰敗結算畫面要複盤用
+    active: true       // 進行中：切到別的分頁再回來要接著打，不能重設（也防止用切分頁躲掉戰敗）
   };
   document.getElementById("diffScreen").style.display = "none";
   document.getElementById("battleScreen").style.display = "block";
@@ -1293,8 +1310,12 @@ function makeReverseSymbolQuestion(pool){
 
 /* 分類辨識：這個元素屬於哪一族。「金屬／過渡金屬／放射性金屬」化學上不互斥（Fe 也是金屬），
    不可互為干擾項，避免「程式唯一解、化學多重解」 */
+/* 「上位分類」也不能當干擾項：鋰是鹼金屬，同時也是金屬；氦是鈍氣，同時也是非金屬。
+   類金屬與金屬／非金屬的界線各教材不一，彼此也不互當干擾項 */
 function makeCategoryQuestion(pool){
-  const CONFUSABLE = {"金屬":["過渡金屬","放射性金屬"], "過渡金屬":["金屬","放射性金屬"], "放射性金屬":["金屬","過渡金屬"]};
+  const M = ["金屬","過渡金屬","放射性金屬"];
+  const CONFUSABLE = {"金屬":["過渡金屬","放射性金屬","類金屬"], "過渡金屬":M, "放射性金屬":M, "鹼金屬":M, "鹼土金屬":M, "鑭系":M,
+    "鹵素":["非金屬"], "鈍氣":["非金屬"], "類金屬":["金屬","非金屬"], "非金屬":["類金屬"]};
   const e = pickWeighted(pool);
   const allCats = Object.keys(CAT_COLOR).filter(c=>c!=="人工合成" && c!=="鑭系" && c!=="錒系");
   const banned = CONFUSABLE[e.cat] || [];
@@ -1312,10 +1333,17 @@ function makeCategoryQuestion(pool){
    找不到符合條件的分組時回傳 null，交給呼叫端 fallback 成其他題型 */
 function makeOddOneQuestion(pool, zoneKey){
   const effCat = c => (c==="金屬"||c==="過渡金屬"||c==="放射性金屬") ? "金屬" : c;
+  /* 落單的那個不能也符合提示：提示「金屬家族」時不能挑鹼土金屬（鈣也是金屬）；
+     提示「非金屬」時不能挑鈍氣、鹵素（它們也是非金屬）；類金屬的歸屬有爭議，也避開 */
+  const ALL_METAL = new Set(["鹼金屬","鹼土金屬","金屬","過渡金屬","放射性金屬","鑭系"]);
+  const oddAllowed = (chosen, oddCat) =>
+    chosen==="金屬" ? !ALL_METAL.has(oddCat) && oddCat!=="類金屬"
+    : chosen==="非金屬" ? ALL_METAL.has(oddCat)
+    : effCat(oddCat)!==chosen;
   const buildEligible = p => {
     const cc = {};
     p.forEach(e=>{ const c=effCat(e.cat); cc[c]=(cc[c]||0)+1; });
-    return Object.keys(cc).filter(c=>cc[c]>=3 && p.some(e=>effCat(e.cat)!==c));
+    return Object.keys(cc).filter(c=>cc[c]>=3 && p.some(e=>oddAllowed(c, e.cat)));
   };
   let oddPool = ELEMENTS.filter(e=>state.known[e.sym] || e.zone===zoneKey);
   let eligibleCats = buildEligible(oddPool);
@@ -1323,7 +1351,7 @@ function makeOddOneQuestion(pool, zoneKey){
   if(eligibleCats.length===0) return null;
   const chosenCat = eligibleCats[Math.floor(Math.random()*eligibleCats.length)];
   const sameCat = oddPool.filter(e=>effCat(e.cat)===chosenCat).sort(()=>Math.random()-0.5).slice(0,3);
-  const others = oddPool.filter(e=>effCat(e.cat)!==chosenCat);
+  const others = oddPool.filter(e=>oddAllowed(chosenCat, e.cat));
   const odd = others[Math.floor(Math.random()*others.length)];
   const opts = sameCat.concat([odd]).sort(()=>Math.random()-0.5);
   const catLabel = chosenCat==="金屬" ? "金屬家族（含過渡金屬）" : chosenCat;
@@ -1347,20 +1375,36 @@ const REAL_LOOKALIKE_PRODUCTS = new Set(("B₂O₃ As₂O₃ Sb₂O₃ BCl₃ PC
   + "CeO₂ PbO₂ PtO₂ UO₂ WO₂ GeO₂ SeO₂ TeO₂ GeO GeS AsS XeF₂ KrF₂ GeF₂ OF₂ F₂O NO NO₂ N₂O N₂O₃ NCl₃ Cl₂O ClO₂ Br₂O "
   + "H₂S HI ICl ClI ICl₃ BrCl FCl BrI Li₂O Cu₂O Ag₂O Rb₂O Cs₂O LiCl CuCl AgCl AuCl CsCl RbCl InCl NLi₃ AlH₃ UH₃ "
   + "CsO₂ RbO₂ HLi HNa HK HCs HRb").split(" "));
+/* 常見氧化數（正／負）。換完的二元產物只要能用這些氧化數配出電荷平衡，就視為「可能是真實化合物」而排除；
+   規則刻意偏保守（例：S 含 +1，才抓得到 2S+Cl₂→2SCl 這種 S₂Cl₂ 的實驗式）。
+   干擾選項也要套用，否則四個選項裡會出現第二個正確答案（例：2Na+Cl₂ 的選項 K 也能組成 2K+Cl₂→2KCl） */
+const OX_POS = {H:[1],Li:[1],Na:[1],K:[1],Rb:[1],Cs:[1],Be:[2],Mg:[2],Ca:[2],Sr:[2],Ba:[2],Al:[3],Ga:[3],In:[1,3],Sn:[2,4],Pb:[2,4],Bi:[3,5],
+  Fe:[2,3],Cu:[1,2],Zn:[2],Ag:[1],Au:[1,3],Hg:[1,2],W:[4,6],Ni:[2,3],Cr:[2,3,6],Ti:[2,3,4],Pt:[2,4],Co:[2,3],Mn:[2,3,4,7],La:[3],Ce:[3,4],Nd:[3],U:[3,4,6],
+  C:[2,4],N:[1,2,3,4,5],S:[1,2,4,6],P:[3,5],Se:[4,6],Te:[4,6],B:[3],Si:[4],Ge:[2,4],As:[3,5],Sb:[3,5],Cl:[1,3,5,7],Br:[1,3,5],I:[1,3,5,7],Xe:[2,4,6],Kr:[2],O:[2]};
+const OX_NEG = {H:[1],C:[4],N:[3],O:[2],F:[1],Cl:[1],Br:[1],I:[1],S:[2],Se:[2],Te:[2],P:[3],As:[3],Sb:[3],B:[3],Si:[4],Ge:[4]};
+function chargeBalancedBinary(formula){
+  const m = {};
+  formula.replace(/[₀-₉]/g, ch=>String.fromCharCode(ch.charCodeAt(0)-0x2080+48))
+    .replace(/([A-Z][a-z]?)(\d*)/g, (x, el, n)=>{ m[el] = (m[el]||0) + (n ? Number(n) : 1); return x; });
+  const ks = Object.keys(m);
+  if(ks.length!==2) return false;
+  const fits = (P, N) => (OX_POS[P]||[]).some(a=>(OX_NEG[N]||[]).some(b=>m[P]*a===m[N]*b));
+  return fits(ks[0], ks[1]) || fits(ks[1], ks[0]);
+}
+/* 換成 sym 之後這條式子「一定是錯的」才回傳 true：不是遊戲配方、不在真實化合物清單、也配不出電荷平衡 */
+function equationSwapIsInvalid(recipe, rightSym, sym){
+  if(sym===rightSym || recipe.r.includes(sym)) return false;
+  const a = recipe.r.map(s=>s===rightSym ? sym : s).slice().sort();
+  if(RECIPES.some(rc=>{ const b = rc.r.slice().sort(); return a.length===b.length && a.every((s,i)=>s===b[i]); })) return false;
+  const product = recipe.eq.split(rightSym).join(sym).split("→")[1].trim().replace(/^\d+\s*/, "");
+  return !REAL_LOOKALIKE_PRODUCTS.has(product) && !chargeBalancedBinary(product);
+}
 function equationWrongCandidates(recipe, rightSym){
   const METALLIC = new Set(["鹼金屬","鹼土金屬","金屬","過渡金屬","放射性金屬","鑭系"]);
   const rightEl = ELEMENTS.find(e=>e.sym===rightSym);
-  const swappedIsRealRecipe = w => RECIPES.some(rc=>{
-    const a = recipe.r.map(s=>s===rightSym? w : s).slice().sort();
-    const b = rc.r.slice().sort();
-    return a.length===b.length && a.every((s,i)=>s===b[i]);
-  });
-  const fakeProduct = w => recipe.eq.split(rightSym).join(w).split("→")[1].trim().replace(/^\d+\s*/, "");
   return ELEMENTS.filter(e =>
-    e.sym!==rightSym && !recipe.r.includes(e.sym)
-    && (e.cat==="鈍氣" || (METALLIC.has(rightEl.cat) ? !METALLIC.has(e.cat) : METALLIC.has(e.cat)))
-    && !swappedIsRealRecipe(e.sym)
-    && !REAL_LOOKALIKE_PRODUCTS.has(fakeProduct(e.sym)));
+    (e.cat==="鈍氣" || (METALLIC.has(rightEl.cat) ? !METALLIC.has(e.cat) : METALLIC.has(e.cat)))
+    && equationSwapIsInvalid(recipe, rightSym, e.sym));
 }
 function makeEquationQuestion(pool, zoneKey, madeRecipes){
   const zoneSyms = new Set(zoneElements(zoneKey).map(e=>e.sym));
@@ -1371,7 +1415,7 @@ function makeEquationQuestion(pool, zoneKey, madeRecipes){
   const rightEl = ELEMENTS.find(e=>e.sym===rightSym);
   const wrongCandidates = equationWrongCandidates(recipe, rightSym);
   const wrongSym = wrongCandidates.length ? wrongCandidates[Math.floor(Math.random()*wrongCandidates.length)].sym : null;
-  const optPool = ELEMENTS.filter(e=>e.sym!==rightSym && e.sym!==wrongSym && state.known[e.sym]);
+  const optPool = ELEMENTS.filter(e=>e.sym!==wrongSym && state.known[e.sym] && equationSwapIsInvalid(recipe, rightSym, e.sym));
   if(!wrongSym || optPool.length<3) return null;
   const fakeEq = recipe.eq.split(rightSym).join(wrongSym);
   const opts = [rightSym];
@@ -1506,6 +1550,8 @@ function answerBattle(choice, btnEl){
     }
     saveState();
     updateHeaderStats();
+    document.getElementById("playerHpBar").style.width = Math.max(0,battle.playerHp)+"%";
+    document.getElementById("enemyHpBar").style.width = Math.max(0,battle.enemyHp)+"%";
     if(battle.enemyHp<=0){
       finishBattle(true);
     } else if(battle.playerHp<=0){
@@ -1517,6 +1563,7 @@ function answerBattle(choice, btnEl){
   }, 800);
 }
 function finishBattle(win){
+  battle.active = false;
   if(win){
     // 每場勝利固定 +1 結晶（複習值得被獎勵，不再只靠機率）
     state.crystals = (state.crystals||0) + 1;
@@ -1589,7 +1636,7 @@ function showBattleResult(allGraduated){
   document.getElementById("qtypeTag").textContent = "🏆 勝利結算";
   document.getElementById("battleQ").textContent = allGraduated
     ? `${z.name} 完全破關！全部元素熟練度都達 ${MASTERY_TARGET}/${MASTERY_MAX} 以上`
-    : `離破關還差一點——熟練度未滿 ${MASTERY_TARGET}/${MASTERY_MAX} 的元素：`;
+    : `離破關還差一點——各元素熟練度（滿 ${MASTERY_TARGET}/${MASTERY_MAX} 才算記牢）：`;
   const optsDiv = document.getElementById("battleOpts");
   optsDiv.innerHTML = "";
   const sorted = battle.pool.slice().sort((a,b)=>(state.mastery[a.sym]||0)-(state.mastery[b.sym]||0));
@@ -1600,7 +1647,8 @@ function showBattleResult(allGraduated){
     const chip = document.createElement("div");
     chip.className = "opt";
     chip.style.cssText = ok ? "opacity:.55" : "";
-    chip.textContent = `${ok?"✅":"🔸"} ${e.sym} ${e.zh}　熟練度 ${lvl}/${MASTERY_MAX}`;
+    chip.textContent = `${ok?"✅":"🔸"} ${e.sym} ${e.zh} ${lvl}/${MASTERY_MAX}`;
+    chip.style.whiteSpace = "nowrap";
     optsDiv.appendChild(chip);
   });
   const again = document.createElement("div");
@@ -1658,6 +1706,9 @@ const STATE_INFO = {
   unknown:{label:"資料不足", color:"transparent", text:"var(--sub)"}
 };
 const TEMP_PRESETS = [[-273,"絕對零度"],[-196,"液態氮"],[-89,"地球最冷紀錄"],[0,"冰點"],[25,"室溫"],[37,"體溫"],[100,"水沸騰"],[1538,"鐵熔化"],[3422,"鎢熔化"],[5500,"太陽表面"]];
+/* 滑桿 0～1000：前 60% 對應 -273～300°C（約 1°C／格），後 40% 對應 300～5600°C，日常溫度才拖得準 */
+const sliderToTemp = v => Math.round(v<=600 ? -273 + v*573/600 : 300 + (v-600)*5300/400);
+const tempToSlider = t => Math.round(t<=300 ? (t+273)*600/573 : 600 + (t-300)*400/5300);
 const fmtC = v => (Math.abs(v) < 100 ? v.toFixed(1) : String(Math.round(v))).replace(/\.0$/, "");
 const fullEl = sym => ELEMENTS.find(x=>x.sym===sym) || FULL_ELEMENTS.find(x=>x.sym===sym);
 function styleOvCell(cell, e){
@@ -1749,20 +1800,32 @@ function renderDecoderPanel(){
     return;
   }
   panel.innerHTML = `<div class="temp-readout">🌡️ 目前溫度 <b id="tempValue"></b><span class="small">（一大氣壓下）</span></div>
-    <input type="range" class="temp-slider" id="tempSlider" min="-273" max="5600" step="1" value="${ovTemp}" aria-label="調整溫度">
+    <input type="range" class="temp-slider" id="tempSlider" min="0" max="1000" step="1" value="${tempToSlider(ovTemp)}" aria-label="調整溫度">
+    <div class="preset-row" id="tempNudge" style="margin-bottom:6px;"></div>
     <div class="preset-row" id="tempPresets"></div>
     <div class="state-count" id="tempCounts"></div>
-    <p class="small" style="margin:8px 0 0;">虛線格子＝資料不足：多半是極不穩定的放射性元素，只存在幾秒鐘，根本來不及量熔點。</p>`;
+    <p class="small" style="margin:8px 0 0;">虛線格子＝資料不足：有些元素極不穩定、只存在很短的時間，來不及測量；有些放射性很強、只能取得極少量，各文獻的數值差很多，這裡先不列出。</p>`;
   inquiry.innerHTML = inquiryHtml(tempInquiry());
   const slider = document.getElementById("tempSlider");
-  slider.addEventListener("input", ()=>{ ovTemp = Number(slider.value); renderTempReadout(); restyleOvCells(); });
+  const setTemp = t=>{ ovTemp = Math.max(-273, Math.min(5600, t)); slider.value = tempToSlider(ovTemp); slider.setAttribute("aria-valuetext", `${ovTemp}°C`); renderTempReadout(); restyleOvCells(); };
+  slider.addEventListener("input", ()=>{ ovTemp = sliderToTemp(Number(slider.value)); slider.setAttribute("aria-valuetext", `${ovTemp}°C`); renderTempReadout(); restyleOvCells(); });
+  const nudge = document.getElementById("tempNudge");
+  [-100,-10,-1,1,10,100].forEach(d=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "action secondary filter-btn";
+    b.textContent = (d>0?"+":"−") + Math.abs(d) + "°C";
+    b.setAttribute("aria-label", `溫度${d>0?"增加":"減少"} ${Math.abs(d)} 度`);
+    b.addEventListener("click", ()=>setTemp(ovTemp + d));
+    nudge.appendChild(b);
+  });
   const presets = document.getElementById("tempPresets");
   TEMP_PRESETS.forEach(([t,label])=>{
     const b = document.createElement("button");
     b.type = "button";
     b.className = "action secondary filter-btn";
     b.textContent = `${label} ${t}°C`;
-    b.addEventListener("click", ()=>{ ovTemp = t; slider.value = t; renderTempReadout(); restyleOvCells(); });
+    b.addEventListener("click", ()=>setTemp(t));
     presets.appendChild(b);
   });
   renderTempReadout();
@@ -1804,7 +1867,7 @@ function renderLab(){ setLabView(labView); }
 function renderDetectiveList(){
   const box = document.getElementById("labDetective");
   const solved = DETECTIVE_CASES.filter(c=>state.labSolved[c.id]).length;
-  box.innerHTML = `<p class="small">選一個案件，自己決定要做哪些實驗，再從觀察結果推理出答案。用越少的實驗破案越厲害！第一次破案可得 💎 結晶。</p>
+  box.innerHTML = `<p class="small">選一個案件，自己決定要做哪些實驗，再從觀察結果推理出答案。用越少的實驗破案越厲害！第一次破案可得 💎 2 顆結晶（做了危險動作或猜錯，各少一顆，至少 1 顆）。</p>
     <p class="small">🕵️ 已破案 <b>${solved}</b>/${DETECTIVE_CASES.length}</p><div class="lab-grid" id="caseGrid"></div>`;
   const grid = document.getElementById("caseGrid");
   DETECTIVE_CASES.forEach(c=>{
@@ -1878,11 +1941,12 @@ function pickCaseAnswer(sym){
   detCase.solved = true;
   if(!state.labSolved[c.id]){
     state.labSolved[c.id] = true;
-    const reward = detCase.traps ? 1 : 2;
+    const reward = Math.max(1, 2 - (detCase.traps ? 1 : 0) - (detCase.wrong.length ? 1 : 0));
     state.crystals = (state.crystals||0) + reward;
     saveState();
     updateHeaderStats();
-    toast(detCase.traps ? `🕵️ 破案！獲得 ${reward} 顆結晶（做了危險動作，少拿一顆喔）` : `🕵️ 破案！獲得 ${reward} 顆結晶`, true);
+    const why = [detCase.traps ? "做了危險動作" : "", detCase.wrong.length ? "先猜錯了" : ""].filter(Boolean).join("、");
+    toast(why ? `🕵️ 破案！獲得 ${reward} 顆結晶（${why}，少拿一顆）` : `🕵️ 破案！推理完美，獲得 ${reward} 顆結晶`, true);
   }
   renderCase();
 }
@@ -1939,7 +2003,7 @@ function renderBalanceList(){
     const card = document.createElement("div");
     card.className = "lab-card" + (state.balanceSolved[p.id] ? " solved" : "");
     card.innerHTML = `<h4>${state.balanceSolved[p.id] ? "✅ " : ""}${p.name}</h4><p>${p.lhs.join(" + ")} → ${p.rhs.join(" + ")}</p>`;
-    makeClickable(card, ()=>{ balCur = {p, coefs:p.ans.map(()=>1), revealed:false, msg:""}; renderBalance(); }, `配平：${p.name}`);
+    makeClickable(card, ()=>{ balCur = {p, coefs:p.ans.map(()=>1), revealed:!!state.balanceRevealed[p.id], msg:""}; renderBalance(); }, `配平：${p.name}`);
     document.getElementById(p.level==="basic" ? "balGridBasic" : "balGridExtra").appendChild(card);
   });
 }
@@ -1988,6 +2052,7 @@ function renderBalance(){
   document.getElementById("btnBalHint").addEventListener("click", balanceHint);
   document.getElementById("btnBalShow").addEventListener("click", ()=>{
     balCur.revealed = true;
+    if(!state.balanceSolved[p.id]){ state.balanceRevealed[p.id] = true; saveState(); }
     balCur.coefs = p.ans.slice();
     balCur.msg = `<div class="lab-note">👀 答案是 ${p.ans.join("、")}。看過答案這題就不給結晶了，換一題自己挑戰吧！</div>`;
     renderBalance();
@@ -2022,6 +2087,12 @@ function checkBalance(){
 }
 function balanceHint(){
   const {p, coefs} = balCur;
+  const bad = atomTally(p, coefs).filter(a=>a.l!==a.r);
+  if(bad.length && !balCur.hinted){
+    balCur.hinted = true;
+    balCur.msg = `<div class="lab-note">💡 先看 <b>${bad[0].el}</b> 原子：左邊 ${bad[0].l} 個、右邊 ${bad[0].r} 個。找出含有 ${bad[0].el} 的化學式，調整它前面的係數。還是卡住的話再按一次提示（會直接告訴你係數，這題就不給結晶）。</div>`;
+    renderBalance(); return;
+  }
   const i = p.ans.findIndex((c,k)=>coefs[k]!==c);
   const g = coefs.reduce((x,y)=>gcd(x,y));
   const scaled = coefs.every((c,k)=>c===p.ans[k]*g);
@@ -2029,7 +2100,8 @@ function balanceHint(){
   else if(scaled && g>1){ balCur.msg = `<div class="lab-note">💡 左右已經一樣多了，試著把所有係數約分成最簡整數比。</div>`; }
   else {
     const f = p.lhs.concat(p.rhs)[i];
-    balCur.msg = `<div class="lab-note">💡 試試把 ${f} 前面的係數改成 ${p.ans[i]}。</div>`;
+    balCur.revealed = true;
+    balCur.msg = `<div class="lab-note">💡 試試把 ${f} 前面的係數改成 ${p.ans[i]}。（用了答案提示，這題不給結晶）</div>`;
   }
   renderBalance();
 }
@@ -2038,7 +2110,7 @@ function balanceHint(){
 switchTab = function(name){
   switchTabBase(name);
   if(name==="craft") renderCraft();
-  if(name==="battle" && currentZone) showDiffScreen();
+  if(name==="battle" && currentZone && !(battle && battle.active && battle.zone===currentZone)) showDiffScreen();
   if(name==="lab") renderLab();
 };
 
@@ -2049,7 +2121,7 @@ updateHeaderStats();
 // 回訪玩家：恢復上次進入的王國，三個分頁不用重新從地圖點一次
 if(state.lastZone && ZONES.some(z=>z.key===state.lastZone) && isZoneUnlocked(state.lastZone)){
   currentZone = state.lastZone;
-  tabs.forEach(b=>{ if(["memorize","craft","battle"].includes(b.dataset.tab)) b.disabled=false; });
+  tabs.forEach(b=>{ if(["memorize","craft","battle"].includes(b.dataset.tab)) { b.classList.remove("locked"); b.removeAttribute("aria-disabled"); } });
   startMemorize(currentZone);
   switchTab("overview");
 }
