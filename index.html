@@ -133,6 +133,52 @@
   .diff-card.selected{border-color:var(--steel);background:var(--panel2);}
   /* ---------- 找碴 / 跨元素比較 ---------- */
   .qtype-tag{display:inline-block;font-size:.65rem;background:var(--panel2);color:var(--sub);padding:2px 8px;border-radius:8px;margin-bottom:8px;}
+  /* ---------- 總覽解碼器（部首／溫度模式） ---------- */
+  .mode-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .decoder-panel{background:var(--panel);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:.85rem;line-height:1.6;}
+  .temp-readout{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .temp-readout b{font-size:1.5rem;color:var(--gold);}
+  .temp-slider{width:100%;accent-color:var(--gold);margin:4px 0 8px;}
+  .preset-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;}
+  .preset-row button{white-space:nowrap;flex-shrink:0;}
+  .state-count{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:.78rem;color:var(--sub);}
+  .ov-cell .ov-zh{font-size:.9rem;line-height:1;}
+  .ov-cell.nodata{background:transparent !important;color:var(--sub) !important;border:1px dashed rgba(110,139,163,.5) !important;}
+  .inquiry{margin-top:10px;}
+  .inquiry details{background:var(--panel2);border-radius:10px;padding:8px 12px;margin-top:6px;}
+  .inquiry summary{cursor:pointer;font-weight:bold;}
+  .inquiry details p{margin:6px 0 2px;color:var(--snow);}
+  /* ---------- 研究室：偵探與配平 ---------- */
+  .lab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+  .lab-card{background:var(--panel);border-radius:12px;padding:12px;cursor:pointer;border:2px solid transparent;border-left:5px solid var(--steel);}
+  .lab-card.solved{border-left-color:var(--success);}
+  .lab-card h4{margin:0 0 4px;font-size:.95rem;}
+  .lab-card p{margin:0;font-size:.72rem;color:var(--sub);}
+  .lab-card:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .lab-box{background:var(--panel);border-radius:14px;padding:16px;}
+  .lab-box h3{margin:0 0 6px;}
+  .test-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+  .obs-log{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px;}
+  .obs-log li{background:var(--panel2);border-radius:10px;padding:8px 12px;font-size:.85rem;line-height:1.5;}
+  .obs-log li.trap{border-left:4px solid var(--danger);}
+  .answer-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .answer-row button{padding:12px 8px;}
+  .answer-row button.right{background:rgba(77,124,94,.3);border-color:var(--success);}
+  .answer-row button.wrongpick{background:rgba(166,75,56,.25);border-color:var(--danger);}
+  .answer-row button.right:disabled{opacity:1;}
+  .answer-row button.wrongpick:disabled{opacity:.75;}
+  .lab-note{background:var(--panel2);border-left:4px solid var(--gold);border-radius:10px;padding:10px 12px;font-size:.85rem;line-height:1.6;margin-top:10px;}
+  .bal-eq{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 8px;margin:14px 0;}
+  .bal-term{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--panel2);border-radius:10px;padding:6px 8px;}
+  .bal-formula{font-size:1.15rem;font-weight:bold;}
+  .bal-step{display:flex;align-items:center;gap:4px;}
+  .bal-step button{width:30px;height:30px;padding:0;border-radius:8px;}
+  .bal-step b{min-width:18px;text-align:center;font-size:1.2rem;color:var(--gold);}
+  .bal-op{font-size:1.2rem;color:var(--sub);}
+  .atom-table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:6px;}
+  .atom-table th,.atom-table td{padding:5px 8px;text-align:center;border-bottom:1px solid rgba(110,139,163,.25);}
+  .atom-table tr.ok td{background:rgba(77,124,94,.22);}
+  .atom-table tr.bad td{background:rgba(166,75,56,.22);}
   /* ---------- 鍵盤可操作的 div（role=button）焦點樣式 ---------- */
   .zone-card:focus-visible, .inv-chip:focus-visible, .diff-card:focus-visible, .opt:focus-visible, .ov-cell.filled:focus-visible, .flashcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 </style>
@@ -182,6 +228,7 @@
     <button data-tab="memorize" disabled>📖 背誦</button>
     <button data-tab="craft" disabled>⚗️ 合成台</button>
     <button data-tab="battle" disabled>⚔️ 王國試煉</button>
+    <button data-tab="lab">🔬 研究室</button>
   </nav>
 
   <section id="tab-overview" class="active">
@@ -189,9 +236,12 @@
       這就是完整的<b>元素週期表</b>，總共 118 個元素！<b>橫排</b>叫「週期」、<b>直排</b>叫「族」——同一直排的元素個性很像，所以我們把它們分成 9 個王國，一共有 56 個元素會列入「王國試煉」教學範圍。
       每個格子都可以點下去看介紹；標<b>⭐</b>的是國中會考較常見的元素，優先背熟它們；其餘的先認識一下，之後有機會慢慢收服！破關越多王國，該區塊就會鑲上金框。
     </div>
+    <div class="mode-bar" id="ovModeBar" role="group" aria-label="週期表顯示模式"></div>
+    <div class="decoder-panel" id="decoderPanel" style="display:none;"></div>
     <div class="ov-scroll-hint">👉 提示：完整週期表共 18 族，可左右滑動查看</div>
     <div class="ov-wrap"><div class="ov-grid" id="ovGrid"></div></div>
     <div class="ov-legend" id="ovLegend"></div>
+    <div class="decoder-panel" id="decoderInquiry" style="display:none;"></div>
     <div class="ov-detail" id="ovDetail"></div>
     <div style="text-align:center;">
       <button class="action primary" id="btnGoMap">🗺️ 前往地圖選王國</button>
@@ -292,6 +342,15 @@
       </div>
       <p class="small" id="battleLog"></p>
     </div>
+  </section>
+
+  <section id="tab-lab">
+    <div class="mode-bar" role="group" aria-label="研究室">
+      <button type="button" class="action secondary filter-btn active" id="btnLabDetective">🕵️ 元素偵探</button>
+      <button type="button" class="action secondary filter-btn" id="btnLabBalance">⚖️ 配平挑戰</button>
+    </div>
+    <div id="labDetective"></div>
+    <div id="labBalance" style="display:none;"></div>
   </section>
 </div>
 <div class="toast" id="toast"></div>
@@ -472,6 +531,170 @@ const RECIPES = [
  {r:["Nd","Fe","B"], product:"釹鐵硼磁鐵", name:"釹鐵硼強力磁鐵（Nd₂Fe₁₄B，耳機喇叭、硬碟）", eq:"Nd₂Fe₁₄B（金屬間化合物，非簡單反應）", emoji:"🧲", type:"alloy", rarity:"legendary"}
 ];
 
+/* ---------- 研究室資料 ---------- */
+/* 一大氣壓下的熔點／沸點（°C）。PubChem 與 Periodic-Table-JSON 兩份來源交叉比對：
+   熔點差 ≤15K 且沸點差 ≤15% 才收錄（數值取 PubChem，與 CRC 手冊相同）；其餘標「資料不足」 */
+const TEMP_DATA = {
+ H:[-259.3,-252.9],Li:[180.5,1341.9],Be:[1286.9,2470.9],B:[2074.9,3999.9],N:[-210,-195.8],O:[-218.8,-182.9],F:[-219.6,-188.1],Ne:[-248.6,-246.1],Na:[97.8,882.9],Mg:[649.9,1089.9],
+ Al:[660.3,2518.9],Si:[1413.9,3264.9],P:[44.2,280.5],S:[115.2,444.6],Cl:[-101.5,-34],Ar:[-189.3,-185.8],K:[63.4,758.9],Ca:[841.9,1483.9],Sc:[1540.9,2835.9],Ti:[1667.9,3286.9],
+ V:[1909.9,3406.9],Cr:[1906.9,2670.9],Mn:[1245.9,2060.9],Fe:[1537.9,2860.9],Co:[1494.9,2926.9],Ni:[1454.9,2912.9],Cu:[1084.6,2561.9],Zn:[419.5,906.9],Ga:[29.8,2203.9],Ge:[938.3,2832.9],
+ Se:[220.5,684.9],Br:[-7.2,58.8],Kr:[-157.4,-153.2],Rb:[39.3,687.9],Sr:[776.9,1381.9],Y:[1521.9,3344.9],Zr:[1854.9,4408.9],Nb:[2476.9,4743.9],Mo:[2622.9,4638.9],Tc:[2156.9,4264.9],
+ Ru:[2333.9,4149.9],Rh:[1963.9,3694.9],Pd:[1554.9,2962.9],Ag:[961.8,2161.9],Cd:[321.1,766.9],In:[156.6,2071.9],Sn:[231.9,2601.9],Sb:[630.6,1586.9],Te:[449.5,987.9],I:[113.7,184.4],
+ Xe:[-111.8,-108.1],Cs:[28.4,670.9],Ba:[726.9,1896.9],La:[917.9,3463.9],Ce:[797.9,3423.9],Pr:[930.9,3519.9],Nd:[1020.9,3073.9],Pm:[1041.9,2999.9],Sm:[1073.9,1793.9],Eu:[821.9,1528.9],
+ Gd:[1312.9,3272.9],Tb:[1355.9,3229.9],Dy:[1411.9,2566.9],Ho:[1473.9,2699.9],Er:[1528.9,2867.9],Tm:[1544.9,1949.9],Yb:[818.9,1195.9],Lu:[1662.9,3401.9],Hf:[2232.9,4602.9],Ta:[3016.9,5457.9],
+ W:[3421.9,5554.9],Re:[3185.9,5595.9],Os:[3032.9,5011.9],Ir:[2445.9,4427.9],Pt:[1768.4,3824.9],Au:[1064.2,2855.9],Hg:[-38.8,356.7],Tl:[303.9,1472.9],Pb:[327.5,1748.9],Bi:[271.4,1563.9],
+ Po:[253.9,961.9],Rn:[-71.1,-61.7],Th:[1749.9,4787.9],U:[1134.9,4130.9],Np:[643.9,3901.9],Pu:[639.9,3227.9],Cm:[1344.9,3126.9]
+};
+/* 特例：He 在一大氣壓下不會凝固；C、As 在一大氣壓下不經液態、直接昇華；P 取白磷 */
+const TEMP_SPECIAL = {
+  He:{melt:null, boil:-268.9, note:"在一大氣壓下，氦就算冷到接近絕對零度也不會變成固體"},
+  C:{sublime:3642, note:"碳在一大氣壓下不會熔化，約 3642°C 直接昇華成氣體"},
+  As:{sublime:614, note:"砷在一大氣壓下不會熔化，約 614°C 直接昇華成氣體"},
+  P:{note:"這是白磷的數值；紅磷的性質不同"}
+};
+
+/* 元素偵探案件。每個測試結果都只描述「看到什麼」，推理留給玩家；
+   陷阱測試（嚐味道、直接聞）由程式統一附加，不計入實驗次數 */
+const DETECTIVE_CASES = [
+ {id:"flame-sr", title:"煙火工廠的神秘粉末", gas:false,
+  story:"煙火工廠的倉庫裡找到一包沒貼標籤的白色粉末，老闆說它是讓煙火變色的材料。",
+  ask:"粉末裡含有哪一種金屬元素？",
+  options:[{label:"鍶 Sr",sym:"Sr"},{label:"鈉 Na",sym:"Na"},{label:"銅 Cu",sym:"Cu"},{label:"鉀 K",sym:"K"}], answer:"Sr",
+  tests:[
+   {icon:"🔥", name:"焰色反應", result:"沾一點粉末放進火焰，火焰變成鮮豔的洋紅色。"},
+   {icon:"💧", name:"溶在水裡", result:"粉末可以溶解，溶液無色透明。"},
+   {icon:"🧲", name:"用磁鐵靠近", result:"磁鐵吸不起來。"}],
+  explain:"鍶的化合物焰色是洋紅色，是煙火紅色的主要來源。鈉的焰色是黃色、鉀是紫色、銅是藍綠色；而且含銅的化合物溶在水裡通常是藍色的。"},
+ {id:"flame-na", title:"海邊岩縫的白色結晶", gas:false,
+  story:"在海邊的岩石縫裡刮下一些白色結晶。",
+  ask:"結晶裡含有哪一種金屬元素？",
+  options:[{label:"鈉 Na",sym:"Na"},{label:"鉀 K",sym:"K"},{label:"鈣 Ca",sym:"Ca"},{label:"鋰 Li",sym:"Li"}], answer:"Na",
+  tests:[
+   {icon:"🔥", name:"焰色反應", result:"火焰變成明亮的黃色。"},
+   {icon:"💧", name:"溶在水裡", result:"很容易溶解，溶液無色透明。"},
+   {icon:"🔌", name:"測試溶液導電", result:"溶在水裡之後，溶液可以導電，燈泡會亮。"}],
+  explain:"鈉的焰色是黃色；鉀是紫色、鈣是磚紅色、鋰是紅色。海水裡含量最多的鹽就是氯化鈉。溶液能導電是因為它是電解質，這一點鈉鹽、鉀鹽都一樣，所以分辨不出來。"},
+ {id:"gas-o2", title:"標籤掉了的氣體瓶", gas:true,
+  story:"實驗桌上有一瓶標籤掉了的無色氣體，老師說它是課本裡出現過的氣體。",
+  ask:"這瓶是什麼氣體？",
+  options:[{label:"氧氣",sym:"O"},{label:"氫氣",sym:"H"},{label:"二氧化碳",sym:"C"},{label:"氮氣",sym:"N"}], answer:"O",
+  tests:[
+   {icon:"🪵", name:"伸入帶火星的木條", result:"木條重新燃起火焰（復燃）！"},
+   {icon:"🧪", name:"通入澄清石灰水", result:"石灰水沒有變化。"},
+   {icon:"🔥", name:"點火靠近瓶口", result:"沒有爆鳴聲，但火焰燒得更旺了。"},
+   {icon:"👋", name:"用手搧聞", result:"無色、無味。"}],
+  explain:"氧氣有助燃性，能讓帶火星的木條復燃，這是檢驗氧氣的標準方法。"},
+ {id:"gas-h2", title:"園遊會的氣球鋼瓶", gas:true,
+  story:"園遊會的氣球攤用鋼瓶灌氣球，可是鋼瓶上的字模糊了。",
+  ask:"鋼瓶裡是什麼氣體？",
+  options:[{label:"氫氣",sym:"H"},{label:"氦氣",sym:"He"},{label:"氧氣",sym:"O"},{label:"二氧化碳",sym:"C"}], answer:"H",
+  tests:[
+   {icon:"🎈", name:"灌進氣球", result:"氣球往上飄走了，這種氣體比空氣輕。"},
+   {icon:"🔥", name:"收集一小管來點火", result:"發出「啵」的爆鳴聲！"},
+   {icon:"🧪", name:"通入澄清石灰水", result:"石灰水沒有變化。"}],
+  explain:"氫氣和氦氣都比空氣輕，只看氣球分不出來；氫氣會燃燒並發出爆鳴聲，氦氣不會燃燒。氫氣易燃很危險，所以現在的氣球都改用氦氣——這個攤位要趕快停用！"},
+ {id:"gas-co2", title:"汽水機後面的鋼瓶", gas:true,
+  story:"餐廳的汽水機後面接著一個鋼瓶，用來讓飲料冒泡泡。",
+  ask:"鋼瓶裡是什麼氣體？",
+  options:[{label:"二氧化碳",sym:"C"},{label:"氮氣",sym:"N"},{label:"氧氣",sym:"O"},{label:"氫氣",sym:"H"}], answer:"C",
+  tests:[
+   {icon:"🕯️", name:"伸入燃著的木條", result:"火焰立刻熄滅。"},
+   {icon:"🧪", name:"通入澄清石灰水", result:"石灰水變混濁了！"},
+   {icon:"🎈", name:"灌進氣球", result:"氣球沉下去，這種氣體比空氣重。"}],
+  explain:"二氧化碳會讓澄清石灰水變混濁，這是檢驗二氧化碳的方法。氮氣也會讓火焰熄滅，但不會讓石灰水變混濁，所以只看木條分不出來。"},
+ {id:"gas-n2", title:"洋芋片袋裡的氣體", gas:true,
+  story:"洋芋片的袋子鼓鼓的，裡面充了一種氣體，讓洋芋片不容易壓碎、也不容易變質。",
+  ask:"袋子裡最可能是什麼氣體？",
+  options:[{label:"氮氣",sym:"N"},{label:"二氧化碳",sym:"C"},{label:"氧氣",sym:"O"},{label:"氫氣",sym:"H"}], answer:"N",
+  tests:[
+   {icon:"🕯️", name:"伸入燃著的木條", result:"火焰熄滅。"},
+   {icon:"🧪", name:"通入澄清石灰水", result:"石灰水沒有變化。"},
+   {icon:"🔥", name:"點火", result:"不會燃燒，也沒有爆鳴聲。"}],
+  explain:"氮氣化學性質穩定、不助燃，常充在食品包裝裡防止食物氧化變質。二氧化碳也會讓火焰熄滅，但它會讓石灰水變混濁，所以要兩個實驗一起看。"},
+ {id:"metal-fe", title:"工地撿到的灰色金屬", gas:false,
+  story:"工地角落撿到一塊灰色的金屬。",
+  ask:"這是哪一種金屬？",
+  options:[{label:"鐵 Fe",sym:"Fe"},{label:"銅 Cu",sym:"Cu"},{label:"鋁 Al",sym:"Al"},{label:"鋅 Zn",sym:"Zn"}], answer:"Fe",
+  tests:[
+   {icon:"🧲", name:"用磁鐵靠近", result:"被磁鐵吸住了！"},
+   {icon:"🧪", name:"放進稀鹽酸", result:"慢慢冒出氣泡，溶液漸漸變成淡綠色。"},
+   {icon:"💦", name:"放在潮濕的空氣中幾天", result:"表面長出紅褐色的鏽。"}],
+  explain:"鐵會被磁鐵吸引（鈷、鎳也會，但不在選項裡）。鐵在潮濕空氣中會生鏽，鐵鏽是紅褐色的。"},
+ {id:"metal-cu", title:"古董店的紅色金屬片", gas:false,
+  story:"古董店的抽屜裡有一片紅褐色的金屬。",
+  ask:"這是哪一種金屬？",
+  options:[{label:"銅 Cu",sym:"Cu"},{label:"金 Au",sym:"Au"},{label:"鐵 Fe",sym:"Fe"},{label:"鋅 Zn",sym:"Zn"}], answer:"Cu",
+  tests:[
+   {icon:"👀", name:"仔細觀察外觀", result:"紅褐色、有金屬光澤。"},
+   {icon:"🧪", name:"放進稀鹽酸", result:"沒有任何變化。"},
+   {icon:"🔥", name:"在空氣中加熱", result:"表面慢慢變黑了。"},
+   {icon:"🔌", name:"測試導電性", result:"導電性非常好。"}],
+  explain:"銅在空氣中加熱會生成黑色的氧化銅；金就算加熱也不會變色。銅和金的活性都很小，放進稀鹽酸都不反應，鐵和鋅則會冒出氫氣。"},
+ {id:"liquid-hg", title:"閣樓舊儀器裡的銀色液體", gas:false,
+  story:"整理閣樓時，一台壞掉的舊儀器裡流出一些銀色液體。",
+  ask:"這是哪一種元素？",
+  options:[{label:"汞 Hg",sym:"Hg"},{label:"溴 Br",sym:"Br"},{label:"鎵 Ga",sym:"Ga"},{label:"鈉 Na",sym:"Na"}], answer:"Hg",
+  tests:[
+   {icon:"👀", name:"仔細觀察外觀", result:"常溫下是銀白色、有金屬光澤的液體。"},
+   {icon:"🔌", name:"測試導電性", result:"可以導電。"},
+   {icon:"🔩", name:"放一根鐵釘上去", result:"鐵釘竟然浮在液面上！這種液體比鐵還重。"}],
+  explain:"汞是唯一常溫下是液體的金屬。溴也是液體，但它是紅棕色、不導電的非金屬；鎵要超過約 30°C 才會熔化。汞蒸氣有毒，看到時不要用手碰，要請大人處理。"},
+ {id:"metal-k", title:"泡在煤油裡的軟金屬", gas:false,
+  story:"老師從一瓶煤油裡夾出一小塊金屬做示範（這類實驗只能由老師操作）。",
+  ask:"這是哪一種金屬？",
+  options:[{label:"鋰 Li",sym:"Li"},{label:"鈉 Na",sym:"Na"},{label:"鉀 K",sym:"K"},{label:"鈣 Ca",sym:"Ca"}], answer:"K",
+  tests:[
+   {icon:"🔪", name:"用小刀切", result:"很軟，可以輕鬆切開，切面是銀白色，很快就變暗。"},
+   {icon:"💧", name:"切一小粒丟進水裡", result:"浮在水面上到處亂竄、劇烈反應，還燒起紫色的火焰！"},
+   {icon:"🔥", name:"焰色反應", result:"火焰是紫色的。"}],
+  explain:"鉀是活性很大的鹼金屬，丟進水裡會燒起紫色火焰。鈉會在水面熔成小球亂竄、焰色是黃色；鋰的反應比較溫和；鈣比水重，會沉下去慢慢冒泡。"},
+ {id:"solid-s", title:"溫泉區的黃色晶體", gas:false,
+  story:"去溫泉區玩，在噴氣孔旁邊看到一些黃色晶體。",
+  ask:"這是哪一種元素？",
+  options:[{label:"硫 S",sym:"S"},{label:"磷 P",sym:"P"},{label:"金 Au",sym:"Au"},{label:"碳 C",sym:"C"}], answer:"S",
+  tests:[
+   {icon:"👀", name:"仔細觀察外觀", result:"黃色、容易碎裂的晶體。"},
+   {icon:"🔌", name:"測試導電性", result:"不導電。"},
+   {icon:"🔥", name:"在空氣中點燃", result:"發出淡藍色的火焰，產生有刺激性臭味的氣體。"}],
+  explain:"硫是黃色的非金屬固體，燃燒產生有臭味的二氧化硫。金也是黃色，但它是金屬，能導電也不會燃燒；磷燃燒會冒出大量白煙，不是淡藍色火焰。"},
+ {id:"solid-i", title:"紫黑色的神秘晶體", gas:false,
+  story:"實驗室櫃子裡有一小瓶紫黑色的晶體。",
+  ask:"這是哪一種元素？",
+  options:[{label:"碘 I",sym:"I"},{label:"碳 C",sym:"C"},{label:"硫 S",sym:"S"},{label:"鐵 Fe",sym:"Fe"}], answer:"I",
+  tests:[
+   {icon:"👀", name:"仔細觀察外觀", result:"紫黑色、帶有金屬光澤的晶體。"},
+   {icon:"🔥", name:"微微加熱", result:"晶體直接變成紫色的蒸氣，沒有先變成液體（昇華）。"},
+   {icon:"🥔", name:"溶在酒精裡，滴到馬鈴薯切片上", result:"馬鈴薯變成藍黑色！"}],
+  explain:"碘受熱會直接昇華成紫色蒸氣；碘遇到澱粉（馬鈴薯裡有很多）會變成藍黑色，這是檢驗澱粉的方法。碘溶在酒精裡就是碘酒。"},
+ {id:"flame-ba", title:"印著「有毒」的煙火粉末", gas:false,
+  story:"煙火工廠的另一個角落，又找到一包白色粉末，包裝上印著「有毒，勿食」。",
+  ask:"粉末裡含有哪一種金屬元素？",
+  options:[{label:"鋇 Ba",sym:"Ba"},{label:"銅 Cu",sym:"Cu"},{label:"鈉 Na",sym:"Na"},{label:"鋰 Li",sym:"Li"}], answer:"Ba",
+  tests:[
+   {icon:"🔥", name:"焰色反應", result:"火焰呈現黃綠色。"},
+   {icon:"💧", name:"溶在水裡", result:"粉末可以溶解，溶液無色透明。"}],
+  explain:"鋇的焰色是黃綠色，是煙火綠色的來源之一；銅的焰色是藍綠色，不過含銅的化合物溶在水裡通常是藍色的，所以兩個實驗一起看就能分辨。可溶於水的鋇化合物有毒，包裝才會警告。"}
+];
+
+/* 配平挑戰：基礎題取自遊戲的反應配方（係數不全是 1 的），進階題是課本經典反應。
+   ans 是最簡整數係數；驗證腳本會窮舉確認每題只有這一組最簡解 */
+const BALANCE_EXTRA = [
+ {id:"x-electrolysis", name:"電解水", lhs:["H₂O"], rhs:["H₂","O₂"], ans:[2,2,1]},
+ {id:"x-h2o2", name:"雙氧水分解製氧（二氧化錳當催化劑）", lhs:["H₂O₂"], rhs:["H₂O","O₂"], ans:[2,2,1]},
+ {id:"x-kclo3", name:"加熱氯酸鉀製氧", lhs:["KClO₃"], rhs:["KCl","O₂"], ans:[2,2,3]},
+ {id:"x-fe3o4", name:"鐵絲在氧氣中燃燒（火星四射）", lhs:["Fe","O₂"], rhs:["Fe₃O₄"], ans:[3,2,1]},
+ {id:"x-na-water", name:"鈉與水反應", lhs:["Na","H₂O"], rhs:["NaOH","H₂"], ans:[2,2,2,1]},
+ {id:"x-zn-hcl", name:"鋅與鹽酸產生氫氣", lhs:["Zn","HCl"], rhs:["ZnCl₂","H₂"], ans:[1,2,1,1]},
+ {id:"x-marble", name:"大理石加鹽酸製二氧化碳", lhs:["CaCO₃","HCl"], rhs:["CaCl₂","H₂O","CO₂"], ans:[1,2,1,1,1]},
+ {id:"x-limewater", name:"二氧化碳讓石灰水變混濁", lhs:["CO₂","Ca(OH)₂"], rhs:["CaCO₃","H₂O"], ans:[1,1,1,1]},
+ {id:"x-neutral", name:"酸鹼中和", lhs:["NaOH","HCl"], rhs:["NaCl","H₂O"], ans:[1,1,1,1]},
+ {id:"x-methane", name:"天然氣（甲烷）燃燒", lhs:["CH₄","O₂"], rhs:["CO₂","H₂O"], ans:[1,2,1,2]},
+ {id:"x-propane", name:"桶裝瓦斯（丙烷）燃燒", lhs:["C₃H₈","O₂"], rhs:["CO₂","H₂O"], ans:[1,5,3,4]},
+ {id:"x-ethanol", name:"酒精燃燒", lhs:["C₂H₅OH","O₂"], rhs:["CO₂","H₂O"], ans:[1,3,2,3]},
+ {id:"x-photo", name:"光合作用", lhs:["CO₂","H₂O"], rhs:["C₆H₁₂O₆","O₂"], ans:[6,6,1,6]},
+ {id:"x-respire", name:"呼吸作用", lhs:["C₆H₁₂O₆","O₂"], rhs:["CO₂","H₂O"], ans:[1,6,6,6]}
+];
+
 const BOSS_UNLOCK = 3; // 需合成幾樣才能挑戰終極王國
 const MASTERY_TARGET = 4; // 熟練度滿格門檻（0~5級）
 const MASTERY_MAX = 5;
@@ -495,7 +718,9 @@ function defaultState(){
     zoneCleared:{},  // zone key -> true
     inventory:{},    // sym -> true (已收集，可用來合成)
     lastZone:null,   // 上次進入的王國，重新整理後自動恢復三個分頁
-    crystals:0
+    crystals:0,
+    labSolved:{},    // 偵探案件 id -> true
+    balanceSolved:{} // 配平題 id -> true
   };
 }
 function isPlainObject(v){ return !!v && typeof v==="object" && !Array.isArray(v); }
@@ -504,7 +729,7 @@ function toMasteryLevel(v){ const n = Math.floor(Number(v)); return Number.isFin
 /* 存檔可能被舊版格式、手動修改或未來版本欄位污染，一律先「消毒」成保證合法的形狀再使用/寫回 */
 function normalizeState(raw){
   const out = Object.assign(defaultState(), isPlainObject(raw) ? raw : {});
-  ["known","mastery","errorType","crafted","zoneCleared","inventory"].forEach(key=>{
+  ["known","mastery","errorType","crafted","zoneCleared","inventory","labSolved","balanceSolved"].forEach(key=>{
     out[key] = isPlainObject(out[key]) ? out[key] : {};
   });
   out.crystals = toNonNegInt(out.crystals);
@@ -588,17 +813,17 @@ function makeOvCell(sym, row){
   const e = taught || full;
   if(!e){ cell.className = "ov-cell empty"; return cell; }
   const cleared = taught ? !!state.zoneCleared[taught.zone] : false;
-  cell.className = "ov-cell filled" + (cleared?" cleared":"");
-  cell.style.background = CAT_COLOR[e.cat] || "var(--panel2)";
-  cell.style.color = "#0b1420";
-  const star = EXAM_LIKELY.has(e.sym) ? `<span class="ov-star">⭐</span>` : "";
-  cell.innerHTML = `<span class="ov-sym">${e.sym}</span>${star}`;
+  cell.className = "ov-cell filled";
+  cell.dataset.cleared = cleared ? "1" : "";
+  styleOvCell(cell, e);
   cell.title = `${e.zh}（${e.cat}）` + (EXAM_LIKELY.has(e.sym) ? " ⭐國中會考常見" : "");
   cell.dataset.sym = e.sym;
   makeClickable(cell, ()=>showOvDetail(e, cell), `${e.zh}（${e.sym}）詳情`);
   return cell;
 }
 function renderOverview(){
+  renderOvModeBar();
+  renderDecoderPanel();
   const grid = document.getElementById("ovGrid");
   grid.innerHTML = "";
   PERIODIC_LAYOUT.forEach((row, ri)=>{
@@ -626,6 +851,16 @@ function renderOverview(){
 }
 function renderOvLegend(){
   const legend = document.getElementById("ovLegend");
+  const dot = (bg, dashed) => `<i class="ov-dot" style="background:${bg};${dashed?"border:1px dashed var(--steel);":""}"></i>`;
+  if(ovMode==="radical"){
+    const count = g => FULL_ELEMENTS.filter(e=>radicalGroup(e.zh)===g).length;
+    legend.innerHTML = ["metal","gas","stone","water","none"].map(g=>`<span>${dot(RADICAL_INFO[g].color, g==="none")}${RADICAL_INFO[g].label}：${RADICAL_INFO[g].desc}（${count(g)}）</span>`).join("");
+    return;
+  }
+  if(ovMode==="temp"){
+    legend.innerHTML = ["solid","liquid","gas","unknown"].map(k=>`<span>${dot(STATE_INFO[k].color, k==="unknown")}${STATE_INFO[k].label}</span>`).join("");
+    return;
+  }
   legend.innerHTML = Object.keys(CAT_COLOR).map(cat=>`<span><i class="ov-dot" style="background:${CAT_COLOR[cat]}"></i>${cat}</span>`).join("")
     + `<span>🏆 金框＝該王國已破關</span>`
     + `<span>⭐ 國中會考較常見／常考的元素</span>`;
@@ -656,7 +891,7 @@ function showOvDetail(e, cellEl){
     <div class="ov-detail-emoji">${emoji}</div>
     <div class="ov-detail-body">
       <div class="ov-detail-title"><span class="ov-detail-sym">${e.sym}</span><span class="ov-detail-zh">${e.zh}</span>${ATOMIC_NUM[e.sym]?`<span class="small" style="opacity:.75">原子序 ${ATOMIC_NUM[e.sym]}</span>`:''}${EXAM_LIKELY.has(e.sym)?'<span title="國中會考常見">⭐</span>':''}</div>
-      ${actionHtml}
+      ${decoderInfoHtml(e)}${actionHtml}
     </div>`;
   detail.classList.add("show");
   if(isTaught){
@@ -1384,11 +1619,427 @@ function showBattleResult(allGraduated){
     : "提示：熟練度低的元素會更常被抽到，多打幾場就能補起來";
 }
 
+/* ---------- 總覽解碼器：部首／溫度模式 ---------- */
+let ovMode = "category";
+let ovTemp = 25;
+const METAL_CATS = new Set(["鹼金屬","鹼土金屬","過渡金屬","金屬","放射性金屬","鑭系","錒系"]);
+/* CJK 統一漢字是依康熙部首排列的，所以用碼位區段就能判斷部首：气(84)、水(85)、石(112)、金(167) */
+function radicalGroup(zh){
+  if(!zh || /^[A-Za-z]+$/.test(zh)) return "none";
+  const cp = zh.codePointAt(0);
+  if(cp>=0x6C14 && cp<=0x6C33) return "gas";
+  if(cp>=0x6C34 && cp<=0x706A) return "water";
+  if(cp>=0x77F3 && cp<=0x7939) return "stone";
+  if(cp>=0x91D1 && cp<=0x9576) return "metal";
+  return "other";
+}
+const RADICAL_INFO = {
+  metal:{label:"金字旁", color:"var(--steel)", text:"var(--snow)", desc:"常溫是固態的金屬（少數類金屬也用）"},
+  gas:{label:"气字頭", color:"var(--snow)", text:"var(--ink)", desc:"常溫是氣體"},
+  stone:{label:"石字旁", color:"var(--gold)", text:"#2a1c00", desc:"常溫是固態的非金屬（含類金屬）"},
+  water:{label:"水／氵", color:"var(--danger)", text:"var(--snow)", desc:"常溫是液體"},
+  none:{label:"無常用中文名", color:"transparent", text:"var(--sub)", desc:"近年才命名的人工合成元素"},
+  other:{label:"其他", color:"var(--panel2)", text:"var(--snow)", desc:""}
+};
+function tempState(sym, t){
+  const sp = TEMP_SPECIAL[sym];
+  if(sp && sp.sublime!=null) return t < sp.sublime ? "solid" : "gas";
+  if(sp && sp.melt===null) return t < sp.boil ? "liquid" : "gas";
+  const d = TEMP_DATA[sym];
+  if(!d) return "unknown";
+  if(t < d[0]) return "solid";
+  if(t < d[1]) return "liquid";
+  return "gas";
+}
+const STATE_INFO = {
+  solid:{label:"固態", color:"var(--steel)", text:"var(--snow)"},
+  liquid:{label:"液態", color:"var(--gold)", text:"#2a1c00"},
+  gas:{label:"氣態", color:"var(--snow)", text:"var(--ink)"},
+  unknown:{label:"資料不足", color:"transparent", text:"var(--sub)"}
+};
+const TEMP_PRESETS = [[-273,"絕對零度"],[-196,"液態氮"],[-89,"地球最冷紀錄"],[0,"冰點"],[25,"室溫"],[37,"體溫"],[100,"水沸騰"],[1538,"鐵熔化"],[3422,"鎢熔化"],[5500,"太陽表面"]];
+const fmtC = v => (Math.abs(v) < 100 ? v.toFixed(1) : String(Math.round(v))).replace(/\.0$/, "");
+const fullEl = sym => ELEMENTS.find(x=>x.sym===sym) || FULL_ELEMENTS.find(x=>x.sym===sym);
+function styleOvCell(cell, e){
+  cell.classList.remove("nodata");
+  cell.classList.toggle("cleared", ovMode==="category" && cell.dataset.cleared==="1");
+  if(ovMode==="radical"){
+    const g = RADICAL_INFO[radicalGroup(e.zh)];
+    cell.style.background = g.color; cell.style.color = g.text;
+    if(g===RADICAL_INFO.none) cell.classList.add("nodata");
+    cell.innerHTML = e.zh!==e.sym ? `<span class="ov-zh">${e.zh}</span>` : `<span class="ov-sym">${e.sym}</span>`;
+  } else if(ovMode==="temp"){
+    const key = tempState(e.sym, ovTemp);
+    const st = STATE_INFO[key];
+    cell.style.background = st.color; cell.style.color = st.text;
+    if(key==="unknown") cell.classList.add("nodata");
+    cell.innerHTML = `<span class="ov-sym">${e.sym}</span>`;
+  } else {
+    cell.style.background = CAT_COLOR[e.cat] || "var(--panel2)";
+    cell.style.color = "#0b1420";
+    cell.innerHTML = `<span class="ov-sym">${e.sym}</span>` + (EXAM_LIKELY.has(e.sym) ? `<span class="ov-star">⭐</span>` : "");
+  }
+}
+function restyleOvCells(){
+  document.querySelectorAll("#ovGrid .ov-cell.filled").forEach(c=>styleOvCell(c, fullEl(c.dataset.sym)));
+}
+function renderOvModeBar(){
+  const bar = document.getElementById("ovModeBar");
+  bar.innerHTML = "";
+  [["category","🎨 分類"],["radical","🔤 部首解碼"],["temp","🌡️ 溫度實驗"]].forEach(([key,label])=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "action secondary filter-btn" + (ovMode===key ? " active" : "");
+    b.textContent = label;
+    b.setAttribute("aria-pressed", ovMode===key ? "true" : "false");
+    b.addEventListener("click", ()=>{ ovMode = key; renderOverview(); });
+    bar.appendChild(b);
+  });
+}
+function inquiryHtml(items){
+  return `<div class="inquiry"><b>🔍 探究任務</b>` + items.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join("") + `</div>`;
+}
+const namesOf = list => list.map(e=>`${e.zh}（${e.sym}）`).join("、");
+function radicalInquiry(){
+  const withName = FULL_ELEMENTS.filter(e=>e.zh!==e.sym);
+  const byGroup = g => withName.filter(e=>radicalGroup(e.zh)===g);
+  const oddMetals = withName.filter(e=>METAL_CATS.has(e.cat) && radicalGroup(e.zh)!=="metal");
+  return [
+    ["常溫下是液體的元素只有兩個，從部首把它們找出來！", `${namesOf(byGroup("water"))}。名字裡的「水」和「氵」就是提示。`],
+    ["有一個金屬的名字沒有金字旁，是哪一個？", `${namesOf(oddMetals)}！它常溫是液體（俗稱「水銀」），所以名字用了「水」。`],
+    ["石字旁的元素都擠在週期表的哪一區？", `右上方：${namesOf(byGroup("stone"))}。金屬和非金屬之間有一條像樓梯的分界線，石字旁的元素都在樓梯右上方。`],
+    [`气字頭的元素有幾個？`, `${byGroup("gas").length} 個：${namesOf(byGroup("gas"))}。大多排在最右邊一整排（鈍氣）。`],
+    ["類金屬介於金屬和非金屬之間，它們的名字用哪個部首？", `兩派都有！用石字旁的：${namesOf(withName.filter(e=>e.cat==="類金屬" && radicalGroup(e.zh)==="stone"))}；用金字旁的：${namesOf(withName.filter(e=>e.cat==="類金屬" && radicalGroup(e.zh)==="metal"))}。所以部首是很好的線索，但不是百分之百的規則。`]
+  ];
+}
+function tempInquiry(){
+  const withData = FULL_ELEMENTS.filter(e=>tempState(e.sym,25)!=="unknown");
+  const meltBetween = withData.filter(e=>tempState(e.sym,25)==="solid" && tempState(e.sym,30)==="liquid");
+  const liquidAt37 = withData.filter(e=>tempState(e.sym,37)==="liquid");
+  const metalsWithMelt = withData.filter(e=>METAL_CATS.has(e.cat) && TEMP_DATA[e.sym]);
+  const hardest = metalsWithMelt.slice().sort((a,b)=>TEMP_DATA[b.sym][0]-TEMP_DATA[a.sym][0])[0];
+  const air = ["N","O","Ar"].map(s=>fullEl(s));
+  return [
+    ["把溫度從 25°C 調到 30°C，哪些金屬融化了？", `${meltBetween.map(e=>`${e.zh}（${e.sym}，${fmtC(TEMP_DATA[e.sym][0])}°C 熔化）`).join("、")}。所以鎵放在手心就會慢慢融化！`],
+    ["在你的體溫 37°C 時，有幾個元素是液體？", `${liquidAt37.length} 個：${namesOf(liquidAt37)}。`],
+    ["哪一個金屬最難熔化？", `${hardest.zh}（${hardest.sym}），熔點約 ${fmtC(TEMP_DATA[hardest.sym][0])}°C，所以以前的燈泡用它做燈絲。`],
+    ["調到 -200°C，空氣裡的氮、氧、氬變成什麼狀態？", air.map(e=>`${e.zh}是${STATE_INFO[tempState(e.sym,-200)].label}`).join("、") + "。工廠就是把空氣冷卻液化，再分離出氮氣和氧氣。"],
+    ["氦要冷到幾度才會結冰？", TEMP_SPECIAL.He.note + "！"]
+  ];
+}
+function tempCounts(){
+  const c = {solid:0, liquid:0, gas:0, unknown:0};
+  FULL_ELEMENTS.forEach(e=>{ c[tempState(e.sym, ovTemp)]++; });
+  return c;
+}
+function renderTempReadout(){
+  const c = tempCounts();
+  document.getElementById("tempValue").textContent = `${ovTemp}°C`;
+  document.getElementById("tempCounts").innerHTML = ["solid","liquid","gas","unknown"].map(k=>`<span>${STATE_INFO[k].label} <b>${c[k]}</b></span>`).join("");
+}
+function renderDecoderPanel(){
+  const panel = document.getElementById("decoderPanel");
+  const inquiry = document.getElementById("decoderInquiry");
+  if(ovMode==="category"){ panel.style.display = inquiry.style.display = "none"; panel.innerHTML = inquiry.innerHTML = ""; return; }
+  panel.style.display = inquiry.style.display = "block";
+  if(ovMode==="radical"){
+    panel.innerHTML = `中文的元素名字藏著密碼！看<b>部首</b>就能猜出它在常溫（約 25°C）下的樣子：
+      <b>金</b>字旁大多是金屬、<b>气</b>字頭是氣體、<b>石</b>字旁是固態的非金屬、有<b>水</b>的是液體。格子裡現在顯示中文名，找找看有沒有例外？看完週期表，下面有探究任務。`;
+    inquiry.innerHTML = inquiryHtml(radicalInquiry());
+    return;
+  }
+  panel.innerHTML = `<div class="temp-readout">🌡️ 目前溫度 <b id="tempValue"></b><span class="small">（一大氣壓下）</span></div>
+    <input type="range" class="temp-slider" id="tempSlider" min="-273" max="5600" step="1" value="${ovTemp}" aria-label="調整溫度">
+    <div class="preset-row" id="tempPresets"></div>
+    <div class="state-count" id="tempCounts"></div>
+    <p class="small" style="margin:8px 0 0;">虛線格子＝資料不足：多半是極不穩定的放射性元素，只存在幾秒鐘，根本來不及量熔點。</p>`;
+  inquiry.innerHTML = inquiryHtml(tempInquiry());
+  const slider = document.getElementById("tempSlider");
+  slider.addEventListener("input", ()=>{ ovTemp = Number(slider.value); renderTempReadout(); restyleOvCells(); });
+  const presets = document.getElementById("tempPresets");
+  TEMP_PRESETS.forEach(([t,label])=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "action secondary filter-btn";
+    b.textContent = `${label} ${t}°C`;
+    b.addEventListener("click", ()=>{ ovTemp = t; slider.value = t; renderTempReadout(); restyleOvCells(); });
+    presets.appendChild(b);
+  });
+  renderTempReadout();
+}
+function decoderInfoHtml(e){
+  const lines = [];
+  if(e.zh!==e.sym){
+    const g = radicalGroup(e.zh);
+    const exception = e.sym==="Hg" ? "它是金屬卻用「水」，因為常溫是液體（水銀）"
+      : (g==="metal" && !METAL_CATS.has(e.cat)) ? `它其實是${e.cat}，卻用了金字旁（部首規則的例外）` : "";
+    lines.push(`🔤 部首：${RADICAL_INFO[g].label}→${exception || RADICAL_INFO[g].desc}`);
+  }
+  const sp = TEMP_SPECIAL[e.sym];
+  const d = TEMP_DATA[e.sym];
+  if(sp && sp.sublime!=null) lines.push(`🌡️ ${sp.note}`);
+  else if(sp && sp.melt===null) lines.push(`🌡️ 沸點 ${fmtC(sp.boil)}°C；${sp.note}`);
+  else if(d) lines.push(`🌡️ 熔點 ${fmtC(d[0])}°C／沸點 ${fmtC(d[1])}°C，室溫下是${STATE_INFO[tempState(e.sym,25)].label}` + (sp ? `（${sp.note}）` : ""));
+  else lines.push("🌡️ 熔點、沸點：資料不足（極不穩定，難以測量）");
+  return `<p class="small" style="margin:4px 0 8px;line-height:1.7;">${lines.join("<br>")}</p>`;
+}
+
+/* ---------- 研究室：元素偵探 ---------- */
+let labView = "detective";
+let detCase = null;
+const TRAP_TASTE = {icon:"👅", name:"嚐嚐看", trap:"🚫 實驗室裡絕對不能嚐任何藥品！有些物質有毒或有腐蝕性。"};
+const TRAP_SNIFF = {icon:"👃", name:"湊近瓶口直接聞", trap:"🚫 不能直接湊近聞！正確方法是用手在瓶口輕輕搧動，讓少量氣體飄過來再聞（搧聞法）。"};
+function setLabView(v){
+  labView = v;
+  document.getElementById("btnLabDetective").classList.toggle("active", v==="detective");
+  document.getElementById("btnLabBalance").classList.toggle("active", v==="balance");
+  document.getElementById("labDetective").style.display = v==="detective" ? "block" : "none";
+  document.getElementById("labBalance").style.display = v==="balance" ? "block" : "none";
+  if(v==="detective"){ if(detCase) renderCase(); else renderDetectiveList(); }
+  else { if(balCur) renderBalance(); else renderBalanceList(); }
+}
+document.getElementById("btnLabDetective").addEventListener("click", ()=>setLabView("detective"));
+document.getElementById("btnLabBalance").addEventListener("click", ()=>setLabView("balance"));
+function renderLab(){ setLabView(labView); }
+function renderDetectiveList(){
+  const box = document.getElementById("labDetective");
+  const solved = DETECTIVE_CASES.filter(c=>state.labSolved[c.id]).length;
+  box.innerHTML = `<p class="small">選一個案件，自己決定要做哪些實驗，再從觀察結果推理出答案。用越少的實驗破案越厲害！第一次破案可得 💎 結晶。</p>
+    <p class="small">🕵️ 已破案 <b>${solved}</b>/${DETECTIVE_CASES.length}</p><div class="lab-grid" id="caseGrid"></div>`;
+  const grid = document.getElementById("caseGrid");
+  DETECTIVE_CASES.forEach(c=>{
+    const card = document.createElement("div");
+    card.className = "lab-card" + (state.labSolved[c.id] ? " solved" : "");
+    card.innerHTML = `<h4>${state.labSolved[c.id] ? "✅ " : "🔎 "}${c.title}</h4><p>${c.gas ? "氣體鑑定" : "物質鑑定"}・${c.tests.length} 種實驗可選</p>`;
+    makeClickable(card, ()=>{ detCase = {c, done:[], log:[], traps:0, wrong:[], solved:false}; renderCase(); }, `案件：${c.title}`);
+    grid.appendChild(card);
+  });
+}
+function renderCase(){
+  const {c} = detCase;
+  const box = document.getElementById("labDetective");
+  const tests = c.tests.map((t,i)=>({...t, i}));
+  const traps = c.gas ? [TRAP_TASTE, TRAP_SNIFF] : [TRAP_TASTE];
+  box.innerHTML = `<div class="lab-box">
+    <h3>🔎 ${c.title}</h3>
+    <p style="line-height:1.6;">${c.story}</p>
+    <p><b>❓ ${c.ask}</b></p>
+    <p class="small">選擇要做的實驗（已做 ${detCase.done.length} 個）：</p>
+    <div class="test-row" id="testRow"></div>
+    <ul class="obs-log" id="obsLog"></ul>
+    <p class="small">📝 推理完了嗎？選出答案：</p>
+    <div class="answer-row" id="answerRow"></div>
+    <div id="caseResult"></div>
+    <div style="margin-top:12px;"><button type="button" class="action secondary" id="btnCaseBack">← 回案件列表</button></div>
+  </div>`;
+  const row = document.getElementById("testRow");
+  tests.forEach(t=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "action secondary";
+    b.textContent = (detCase.done.includes(t.i) ? "✓ " : "") + `${t.icon} ${t.name}`;
+    b.disabled = detCase.done.includes(t.i);
+    b.addEventListener("click", ()=>{ detCase.done.push(t.i); detCase.log.push({text:`${t.icon} ${t.name}：${t.result}`}); renderCase(); });
+    row.appendChild(b);
+  });
+  traps.forEach(t=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "action secondary";
+    b.textContent = `${t.icon} ${t.name}`;
+    b.addEventListener("click", ()=>{ detCase.traps++; detCase.log.push({text:t.trap, trap:true}); renderCase(); });
+    row.appendChild(b);
+  });
+  document.getElementById("obsLog").innerHTML = detCase.log.length
+    ? detCase.log.map(l=>`<li class="${l.trap?"trap":""}">${l.text}</li>`).join("")
+    : `<li>還沒有做任何實驗。先想想：哪一個實驗最能把選項分開？</li>`;
+  const ans = document.getElementById("answerRow");
+  c.options.forEach(o=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "action secondary" + (detCase.solved && o.sym===c.answer ? " right" : "") + (detCase.wrong.includes(o.sym) ? " wrongpick" : "");
+    b.textContent = o.label;
+    b.disabled = detCase.solved || detCase.wrong.includes(o.sym);
+    b.addEventListener("click", ()=>pickCaseAnswer(o.sym));
+    ans.appendChild(b);
+  });
+  const res = document.getElementById("caseResult");
+  if(detCase.solved){
+    res.innerHTML = `<div class="lab-note">🎉 <b>破案！</b>你用了 ${detCase.done.length} 個實驗。<br>${c.explain}</div>`;
+  } else if(detCase.wrong.length){
+    res.innerHTML = `<div class="lab-note">🤔 不是這個喔。回頭看看觀察紀錄，哪一個結果跟它對不上？也可以再多做一個實驗。</div>`;
+  }
+  document.getElementById("btnCaseBack").addEventListener("click", ()=>{ detCase = null; renderDetectiveList(); });
+}
+function pickCaseAnswer(sym){
+  if(!detCase || detCase.solved) return;
+  const {c} = detCase;
+  if(sym!==c.answer){ detCase.wrong.push(sym); renderCase(); return; }
+  detCase.solved = true;
+  if(!state.labSolved[c.id]){
+    state.labSolved[c.id] = true;
+    const reward = detCase.traps ? 1 : 2;
+    state.crystals = (state.crystals||0) + reward;
+    saveState();
+    updateHeaderStats();
+    toast(detCase.traps ? `🕵️ 破案！獲得 ${reward} 顆結晶（做了危險動作，少拿一顆喔）` : `🕵️ 破案！獲得 ${reward} 顆結晶`, true);
+  }
+  renderCase();
+}
+
+/* ---------- 研究室：配平挑戰 ---------- */
+let balCur = null;
+function parseFormulaAtoms(f){
+  const s = f.replace(/[₀-₉]/g, ch=>String.fromCharCode(ch.charCodeAt(0)-0x2080+48));
+  let i = 0;
+  function group(){
+    const m = {};
+    while(i<s.length && s[i]!==")"){
+      let part;
+      if(s[i]==="("){ i++; part = group(); i++; }
+      else {
+        const mm = /^[A-Z][a-z]?/.exec(s.slice(i));
+        if(!mm) throw new Error("無法解析化學式 " + f);
+        part = {[mm[0]]:1}; i += mm[0].length;
+      }
+      const nm = /^\d+/.exec(s.slice(i));
+      const n = nm ? Number(nm[0]) : 1;
+      if(nm) i += nm[0].length;
+      Object.keys(part).forEach(k=>{ m[k] = (m[k]||0) + part[k]*n; });
+    }
+    return m;
+  }
+  return group();
+}
+function eqTerms(side){
+  return side.split("+").map(t=>t.trim()).map(t=>{ const m = /^(\d*)\s*(.+)$/.exec(t); return {coef:m[1]?Number(m[1]):1, f:m[2]}; });
+}
+const BALANCE_PUZZLES = RECIPES.filter(r=>r.type==="reaction").map(r=>{
+  const [l, rr] = r.eq.split("→");
+  const L = eqTerms(l), R = eqTerms(rr);
+  return {id:"r-"+r.product, name:r.name.split("（")[0], note:r.name, lhs:L.map(t=>t.f), rhs:R.map(t=>t.f), ans:L.concat(R).map(t=>t.coef), level:"basic"};
+}).filter(p=>p.ans.some(c=>c!==1)).concat(BALANCE_EXTRA.map(p=>Object.assign({level:"extra", note:p.name}, p)));
+function atomTally(p, coefs){
+  const left = {}, right = {};
+  p.lhs.forEach((f,i)=>{ const a = parseFormulaAtoms(f); Object.keys(a).forEach(k=>{ left[k] = (left[k]||0) + a[k]*coefs[i]; }); });
+  p.rhs.forEach((f,j)=>{ const a = parseFormulaAtoms(f); Object.keys(a).forEach(k=>{ right[k] = (right[k]||0) + a[k]*coefs[p.lhs.length+j]; }); });
+  const els = [];
+  p.lhs.concat(p.rhs).forEach(f=>Object.keys(parseFormulaAtoms(f)).forEach(k=>{ if(!els.includes(k)) els.push(k); }));
+  return els.map(k=>({el:k, l:left[k]||0, r:right[k]||0}));
+}
+const gcd = (a,b)=>b ? gcd(b, a%b) : a;
+function renderBalanceList(){
+  const box = document.getElementById("labBalance");
+  const solved = BALANCE_PUZZLES.filter(p=>state.balanceSolved[p.id]).length;
+  box.innerHTML = `<p class="small">化學反應前後，每一種原子的數量都不會變（原子不會憑空出現或消失）。調整化學式<b>前面的係數</b>，讓左右兩邊的原子數一樣多！第一次配平可得 💎 結晶。</p>
+    <p class="small">⚖️ 已配平 <b>${solved}</b>/${BALANCE_PUZZLES.length}</p>
+    <h4 style="margin:12px 0 6px;">⭐ 基礎：遊戲裡的合成反應</h4><div class="lab-grid" id="balGridBasic"></div>
+    <h4 style="margin:16px 0 6px;">🔥 進階：課本經典反應</h4><div class="lab-grid" id="balGridExtra"></div>`;
+  BALANCE_PUZZLES.forEach(p=>{
+    const card = document.createElement("div");
+    card.className = "lab-card" + (state.balanceSolved[p.id] ? " solved" : "");
+    card.innerHTML = `<h4>${state.balanceSolved[p.id] ? "✅ " : ""}${p.name}</h4><p>${p.lhs.join(" + ")} → ${p.rhs.join(" + ")}</p>`;
+    makeClickable(card, ()=>{ balCur = {p, coefs:p.ans.map(()=>1), revealed:false, msg:""}; renderBalance(); }, `配平：${p.name}`);
+    document.getElementById(p.level==="basic" ? "balGridBasic" : "balGridExtra").appendChild(card);
+  });
+}
+function renderBalance(){
+  const {p, coefs} = balCur;
+  const box = document.getElementById("labBalance");
+  box.innerHTML = `<div class="lab-box">
+    <h3>⚖️ ${p.name}</h3>
+    ${p.note!==p.name ? `<p class="small">${p.note}</p>` : ""}
+    <p class="small">⚠️ 只能改前面的係數，不能改化學式裡的小數字——改了小數字就變成另一種物質了！</p>
+    <div class="bal-eq" id="balEq"></div>
+    <table class="atom-table"><thead><tr><th>原子</th><th>左邊</th><th>右邊</th><th></th></tr></thead><tbody id="atomBody"></tbody></table>
+    <div class="btn-row" style="margin-top:12px;">
+      <button type="button" class="action primary" id="btnBalCheck">✅ 完成配平</button>
+      <button type="button" class="action secondary" id="btnBalHint">💡 提示</button>
+      <button type="button" class="action secondary" id="btnBalShow">👀 看答案</button>
+    </div>
+    <div id="balMsg">${balCur.msg}</div>
+    <div style="margin-top:12px;"><button type="button" class="action secondary" id="btnBalBack">← 回題目列表</button></div>
+  </div>`;
+  const eq = document.getElementById("balEq");
+  const terms = p.lhs.map(f=>({f, side:"l"})).concat(p.rhs.map(f=>({f, side:"r"})));
+  terms.forEach((t,i)=>{
+    if(i>0){
+      const op = document.createElement("span");
+      op.className = "bal-op";
+      op.textContent = i===p.lhs.length ? "→" : "+";
+      eq.appendChild(op);
+    }
+    const term = document.createElement("div");
+    term.className = "bal-term";
+    term.innerHTML = `<div class="bal-step"><button type="button" class="action secondary" aria-label="${t.f} 係數減一">−</button><b>${coefs[i]}</b><button type="button" class="action secondary" aria-label="${t.f} 係數加一">+</button></div><div class="bal-formula">${t.f}</div>`;
+    const [minus, plus] = term.querySelectorAll("button");
+    minus.disabled = coefs[i]<=1 || balCur.solved;
+    plus.disabled = coefs[i]>=9 || balCur.solved;
+    minus.addEventListener("click", ()=>{ coefs[i]--; balCur.msg = ""; renderBalance(); });
+    plus.addEventListener("click", ()=>{ coefs[i]++; balCur.msg = ""; renderBalance(); });
+    eq.appendChild(term);
+  });
+  document.getElementById("atomBody").innerHTML = atomTally(p, coefs).map(a=>
+    `<tr class="${a.l===a.r?"ok":"bad"}"><td>${a.el}</td><td>${a.l}</td><td>${a.r}</td><td>${a.l===a.r?"✓":"✗"}</td></tr>`).join("");
+  document.getElementById("btnBalCheck").disabled = !!balCur.solved;
+  document.getElementById("btnBalHint").disabled = !!balCur.solved;
+  document.getElementById("btnBalShow").disabled = !!balCur.solved;
+  document.getElementById("btnBalCheck").addEventListener("click", checkBalance);
+  document.getElementById("btnBalHint").addEventListener("click", balanceHint);
+  document.getElementById("btnBalShow").addEventListener("click", ()=>{
+    balCur.revealed = true;
+    balCur.coefs = p.ans.slice();
+    balCur.msg = `<div class="lab-note">👀 答案是 ${p.ans.join("、")}。看過答案這題就不給結晶了，換一題自己挑戰吧！</div>`;
+    renderBalance();
+  });
+  document.getElementById("btnBalBack").addEventListener("click", ()=>{ balCur = null; renderBalanceList(); });
+}
+function checkBalance(){
+  const {p, coefs} = balCur;
+  const bad = atomTally(p, coefs).filter(a=>a.l!==a.r);
+  if(bad.length){
+    const a = bad[0];
+    balCur.msg = `<div class="lab-note">還沒平衡：${a.el} 原子左邊 ${a.l} 個、右邊 ${a.r} 個。先從不一樣的原子下手。</div>`;
+    renderBalance(); return;
+  }
+  const g = coefs.reduce((x,y)=>gcd(x,y));
+  if(g>1){
+    balCur.msg = `<div class="lab-note">平衡了！但所有係數都能被 ${g} 整除，化學式要用<b>最簡單的整數比</b>，再約分看看。</div>`;
+    renderBalance(); return;
+  }
+  balCur.solved = true;
+  let msg = `<div class="lab-note">🎉 配平成功！左右兩邊每種原子都一樣多。`;
+  if(!balCur.revealed && !state.balanceSolved[p.id]){
+    state.balanceSolved[p.id] = true;
+    state.crystals = (state.crystals||0) + 1;
+    saveState();
+    updateHeaderStats();
+    msg += `獲得 1 顆結晶！`;
+    toast("⚖️ 配平成功！獲得 1 顆結晶", true);
+  }
+  balCur.msg = msg + `</div>`;
+  renderBalance();
+}
+function balanceHint(){
+  const {p, coefs} = balCur;
+  const i = p.ans.findIndex((c,k)=>coefs[k]!==c);
+  const g = coefs.reduce((x,y)=>gcd(x,y));
+  const scaled = coefs.every((c,k)=>c===p.ans[k]*g);
+  if(i===-1){ balCur.msg = `<div class="lab-note">💡 已經是正確答案了，按「完成配平」吧！</div>`; }
+  else if(scaled && g>1){ balCur.msg = `<div class="lab-note">💡 左右已經一樣多了，試著把所有係數約分成最簡整數比。</div>`; }
+  else {
+    const f = p.lhs.concat(p.rhs)[i];
+    balCur.msg = `<div class="lab-note">💡 試試把 ${f} 前面的係數改成 ${p.ans[i]}。</div>`;
+  }
+  renderBalance();
+}
+
 /* ---------- Tab 切換時的資料刷新 ---------- */
 switchTab = function(name){
   switchTabBase(name);
   if(name==="craft") renderCraft();
   if(name==="battle" && currentZone) showDiffScreen();
+  if(name==="lab") renderLab();
 };
 
 /* ---------- 初始化 ---------- */
