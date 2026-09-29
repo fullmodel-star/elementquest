@@ -306,7 +306,7 @@
         <div class="inv-grid" id="invGrid"></div>
       </div>
       <div>
-        <p class="small">合成配方進度：</p>
+        <p class="small">合成配方進度：還沒合成過的配方，材料會用 ❓ 藏起來——從產物名稱推推看（例如「氧化鎂」），或花結晶買線索！</p>
         <div class="recipe-filter-row" id="recipeFilterRow"></div>
         <div class="recipe-list" id="recipeList"></div>
       </div>
@@ -417,9 +417,9 @@ const ELEMENTS = [
 ];
 
 const CAT_COLOR = {
-  "非金屬":"#34d399", "鈍氣":"#c084fc", "鹼金屬":"#f472b6", "鹼土金屬":"#fb923c",
-  "類金屬":"#4ade80", "鹵素":"#a78bfa", "過渡金屬":"#22d3ee", "金屬":"#60a5fa", "放射性金屬":"#f87171",
-  "鑭系":"#2dd4bf", "錒系":"#fb7185", "人工合成":"#94a3b8"
+  "非金屬":"#34d399", "鈍氣":"#e2e8f0", "鹼金屬":"#f472b6", "鹼土金屬":"#fb923c",
+  "類金屬":"#facc15", "鹵素":"#a78bfa", "過渡金屬":"#22d3ee", "金屬":"#60a5fa", "放射性金屬":"#ef4444",
+  "鑭系":"#a3e635", "錒系":"#fda4af", "人工合成":"#94a3b8"
 };
 const CATEGORY_INFO = {
   "鹼金屬":{emoji:"🌊", fact:"鹼金屬，最外層只有1個電子，很容易失去形成+1價離子，遇水反應劇烈。"},
@@ -478,7 +478,7 @@ const ZONES = [
  {key:"metal", name:"鋼鐵工匠之城", emoji:"⚒️", color:"#22d3ee", desc:"Fe Cu Zn Ag Au Hg Sn Pb Al W"},
  {key:"alloy", name:"合金鍛造谷", emoji:"🔩", color:"#38bdf8", desc:"Ni Cr Ti Pt Co Mn Ga In Bi"},
  {key:"lanth", name:"秘境鑭系谷", emoji:"🧲", color:"#2dd4bf", desc:"La Ce Nd"},
- {key:"boss", name:"禁忌放射王座", emoji:"☢️", color:"#f87171", desc:"U（終極王國，需集齊 3 件合成物解鎖）"}
+ {key:"boss", name:"禁忌放射王座", emoji:"☢️", color:"#f87171", desc:"U＋你背熟的⭐會考元素總複習（終極王國，需集齊 3 件合成物解鎖）"}
 ];
 
 const RECIPES = [
@@ -717,6 +717,7 @@ function defaultState(){
     inventory:{},    // sym -> true (已收集，可用來合成)
     lastZone:null,   // 上次進入的王國，重新整理後自動恢復三個分頁
     crystals:0,
+    recipeClues:{},  // 配方 product -> 已用線索揭露的材料符號陣列
     labSolved:{},    // 偵探案件 id -> true
     balanceSolved:{}, // 配平題 id -> true
     balanceRevealed:{} // 看過答案的配平題 id -> true（之後自己解出來也不給結晶）
@@ -728,10 +729,11 @@ function toMasteryLevel(v){ const n = Math.floor(Number(v)); return Number.isFin
 /* 存檔可能被舊版格式、手動修改或未來版本欄位污染，一律先「消毒」成保證合法的形狀再使用/寫回 */
 function normalizeState(raw){
   const out = Object.assign(defaultState(), isPlainObject(raw) ? raw : {});
-  ["known","mastery","errorType","crafted","zoneCleared","inventory","labSolved","balanceSolved","balanceRevealed"].forEach(key=>{
+  ["known","mastery","errorType","crafted","zoneCleared","inventory","labSolved","balanceSolved","balanceRevealed","recipeClues"].forEach(key=>{
     out[key] = isPlainObject(out[key]) ? out[key] : {};
   });
   out.crystals = toNonNegInt(out.crystals);
+  Object.keys(out.recipeClues).forEach(k=>{ const v = out.recipeClues[k]; out.recipeClues[k] = Array.isArray(v) ? v.filter(x=>typeof x==="string") : []; });
   out.lastZone = (typeof out.lastZone==="string" && ZONES.some(z=>z.key===out.lastZone)) ? out.lastZone : null;
   const mastery = {};
   Object.keys(out.mastery).forEach(sym=>{ mastery[sym] = toMasteryLevel(out.mastery[sym]); });
@@ -911,6 +913,11 @@ function showOvDetail(e, cellEl){
 let currentZone = null;
 
 function zoneElements(key){ return ELEMENTS.filter(e=>e.zone===key); }
+/* 試煉題庫：終極王國除了鈾，還要考你已背熟的⭐會考元素，才像最後一關（背誦仍只背鈾） */
+function battlePool(key){
+  if(key!=="boss") return zoneElements(key);
+  return ELEMENTS.filter(e=>e.zone==="boss" || (EXAM_LIKELY.has(e.sym) && state.known[e.sym]));
+}
 function zoneKnownCount(key){ return zoneElements(key).filter(e=>state.known[e.sym]).length; }
 function isZoneUnlocked(key){
   if(key!=="boss") return true;
@@ -1079,7 +1086,7 @@ function renderCraft(){
   document.getElementById("craftCollectProgress").textContent = `🧪 合成圖鑑：已合成 ${made}/${total}`;
   document.getElementById("craftCollectBar").style.width = total? (made/total*100)+"%" : "0%";
   document.getElementById("craftCollectBar").style.background = "var(--gold)";
-  document.getElementById("btnRecipeClue").textContent = `💎 花 5 顆結晶購買配方線索（現有 ${state.crystals||0} 顆）`;
+  document.getElementById("btnRecipeClue").textContent = `💎 花 5 顆結晶揭露一個配方材料（現有 ${state.crystals||0} 顆）`;
   renderRecipeList();
 }
 function selectCraftElement(sym){
@@ -1204,7 +1211,9 @@ function renderRecipeList(){
     const div = document.createElement("div");
     div.className = "recipe-item" + (made?" made":"");
     const typeTag = r.type==="alloy" ? "🔩合金" : "⚗️反應";
-    div.innerHTML = `<span>${made?"✅":(have?"🔓":"🔒")} ${r.r.join(" + ")} → ${r.name} <span class="small">${typeTag} ${RARITY_LABEL[r.rarity]||""}</span></span><span class="small">${made? r.eq : (have?"可嘗試合成":"尚缺元素")}</span>`;
+    const clues = state.recipeClues[r.product] || [];
+    const mats = made ? r.r.join(" + ") : r.r.map(x=>clues.includes(x) ? x : "❓").join(" + ");
+    div.innerHTML = `<span>${made?"✅":(have?"🔓":"🔒")} ${mats} → ${r.name} <span class="small">${typeTag} ${RARITY_LABEL[r.rarity]||""}</span></span><span class="small">${made? r.eq : (have?"可嘗試合成":"尚缺元素")}</span>`;
     list.appendChild(div);
   });
 }
@@ -1216,16 +1225,25 @@ function buyRecipeClue(){
     toast("🎉 你已經解鎖了所有配方！");
     return;
   }
+  const hidden = notCrafted.filter(r=>r.r.some(x=>!(state.recipeClues[r.product]||[]).includes(x)));
+  if(hidden.length===0){
+    toast("🔍 還沒合成的配方，材料都已經揭露了，去合成台試試看吧！");
+    return;
+  }
   if((state.crystals||0) < 5){
     toast(`💎 結晶不夠（需要 5 顆，現有 ${state.crystals||0} 顆）——答題與合成都有機會獲得！`);
     return;
   }
   state.crystals -= 5;
-  const recipe = notCrafted[Math.floor(Math.random()*notCrafted.length)];
-  const clueSym = recipe.r[Math.floor(Math.random()*recipe.r.length)];
+  const recipe = hidden[Math.floor(Math.random()*hidden.length)];
+  const known = state.recipeClues[recipe.product] || [];
+  const unrevealed = recipe.r.filter(x=>!known.includes(x));
+  const clueSym = unrevealed[Math.floor(Math.random()*unrevealed.length)];
+  state.recipeClues[recipe.product] = known.concat(clueSym);
+  const shortName = recipe.name.split("（")[0];
   const msg = recipe.type==="alloy"
-    ? `🔍 神秘線索：嘗試將【${clueSym}】與${["非金屬","類金屬"].includes((ELEMENTS.find(x=>x.sym===clueSym)||{}).cat) ? "" : "其他"}金屬混合，似乎能鍛造出高級合金...`
-    : `🔍 反應線索：某個化學反應需要【${clueSym}】作為材料，試試看能組出什麼！`;
+    ? `🔍 神秘線索：鍛造「${shortName}」要把【${clueSym}】與${["非金屬","類金屬"].includes((ELEMENTS.find(x=>x.sym===clueSym)||{}).cat) ? "" : "其他"}金屬混合…（配方表已更新）`
+    : `🔍 反應線索：「${shortName}」的材料之一是【${clueSym}】！（配方表已更新）`;
   saveState();
   updateHeaderStats();
   toast(msg, true, 4200);
@@ -1265,7 +1283,7 @@ function showDiffScreen(){
 }
 
 function startBattle(zoneKey, diffKey){
-  const pool = zoneElements(zoneKey);
+  const pool = battlePool(zoneKey);
   if(pool.length===0){ toast("這區沒有元素可試煉"); return; }
   const diff = DIFFICULTIES.find(d=>d.key===diffKey) || DIFFICULTIES[1];
   battle = {
@@ -1305,7 +1323,7 @@ function makeReverseSymbolQuestion(pool){
     if(!opts.includes(pick.sym)) opts.push(pick.sym);
   }
   opts.sort(()=>Math.random()-0.5);
-  return { current:e, opts, answer:e.sym, qtext:`「${e.zh}」的元素符號是？`, errType:"symbol", qtype:"reverseSymbol" };
+  return { current:e, opts, answer:e.sym, qtext:`「${e.zh}」的元素符號是？`, errType:"symbol", qtype:"reverseSymbol", explain:`「${e.zh}」的元素符號是 ${e.sym}。` };
 }
 
 /* 分類辨識：這個元素屬於哪一族。「金屬／過渡金屬／放射性金屬」化學上不互斥（Fe 也是金屬），
@@ -1324,7 +1342,7 @@ function makeCategoryQuestion(pool){
   const shuffledCats = others.slice().sort(()=>Math.random()-0.5);
   while(opts.length<4 && shuffledCats.length>0) opts.push(shuffledCats.pop());
   opts.sort(()=>Math.random()-0.5);
-  return { current:e, opts, answer:e.cat, qtext:`${e.sym}（${e.zh}）屬於哪一個分類？`, errType:"category", qtype:"category" };
+  return { current:e, opts, answer:e.cat, qtext:`${e.sym}（${e.zh}）屬於哪一個分類？`, errType:"category", qtype:"category", explain:`${e.sym}（${e.zh}）屬於${e.cat}。` };
 }
 
 /* 跨元素比較：同「分類」3個 + 不同分類 1個，找出「性質最不同」的那一個
@@ -1361,7 +1379,8 @@ function makeOddOneQuestion(pool, zoneKey){
     answer: `${odd.sym} ${odd.zh}`,
     qtext: `哪一個元素跟其他三個「化學分類」不一樣？（提示：其他三個都是${catLabel}）`,
     errType: "category",
-    qtype: "oddOne"
+    qtype: "oddOne",
+    explain: `${odd.sym} ${odd.zh} 是${odd.cat}，其他三個都是${catLabel}。`
   };
 }
 
@@ -1431,7 +1450,8 @@ function makeEquationQuestion(pool, zoneKey, madeRecipes){
     answer: rightSym,
     qtext: `找碴！這個反應式怪怪的：「${fakeEq}」，正確應該是哪個元素？`,
     errType: "equation",
-    qtype: "equation"
+    qtype: "equation",
+    explain: `原本的反應是 ${recipe.eq}（${recipe.name}）。`
   };
 }
 
@@ -1445,7 +1465,7 @@ function makeSymbolQuestion(pool){
     if(!opts.includes(pick.zh)) opts.push(pick.zh);
   }
   opts.sort(()=>Math.random()-0.5);
-  return { current:e, opts, answer:e.zh, qtext:`${e.sym} 是什麼元素？`, errType:"symbol", qtype:"symbol" };
+  return { current:e, opts, answer:e.zh, qtext:`${e.sym} 是什麼元素？`, errType:"symbol", qtype:"symbol", explain:`${e.sym} 是「${e.zh}」。` };
 }
 
 /* 決定題型並 fallback；實際出題邏輯都在上面各個 make*Question 函式 */
@@ -1475,6 +1495,7 @@ function nextBattleQuestion(){
   battle.qtext = q.qtext;
   battle.errType = q.errType;
   battle.qtype = q.qtype;
+  battle.explain = q.explain || "";
 }
 
 const QTYPE_LABEL = {symbol:"🔎 辨識", reverseSymbol:"🔁 反向辨識", category:"🏷️ 分類", oddOne:"🧩 跨元素比較", equation:"🐛 找碴"};
@@ -1507,7 +1528,7 @@ function renderBattle(){
     makeClickable(hint, useBattleHint, "花 3 顆結晶排除兩個錯誤選項");
     optsDiv.appendChild(hint);
   }
-  document.getElementById("battleLog").textContent = `幫元素之靈想起自己的身份，牠就會安心歸位（熟練度需達 ${MASTERY_TARGET}/${MASTERY_MAX}）`;
+  document.getElementById("battleLog").textContent = battle.lastNote ? `📘 上一題：${battle.lastNote}` : `幫元素之靈想起自己的身份，牠就會安心歸位（熟練度需達 ${MASTERY_TARGET}/${MASTERY_MAX}）`;
 }
 function useBattleHint(){
   if(battle.answered || battle.hintUsed) return;
@@ -1532,6 +1553,8 @@ function answerBattle(choice, btnEl){
     if(o.textContent===battle.answer) o.classList.add("correct");
     else if(o===btnEl && !correct) o.classList.add("wrong");
   });
+  document.getElementById("battleLog").textContent = correct ? `✅ 答對了！${battle.explain}` : `❌ 正解：${battle.explain}`;
+  battle.lastNote = correct ? "" : battle.explain;
   setTimeout(()=>{
     if(correct){
       state.mastery[e.sym] = Math.min(MASTERY_MAX, (state.mastery[e.sym]||0)+1);
@@ -1560,7 +1583,7 @@ function answerBattle(choice, btnEl){
       nextBattleQuestion();
       renderBattle();
     }
-  }, 800);
+  }, correct ? 900 : 2600);
 }
 function finishBattle(win){
   battle.active = false;

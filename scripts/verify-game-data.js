@@ -190,7 +190,7 @@ var __simCount = 0;
   var zoneList = ZONES.map(function(z){ return z.key; });
   for(var i=0;i<2000;i++){
     var zoneKey = zoneList[i % zoneList.length];
-    var pool = zoneElements(zoneKey);
+    var pool = battlePool(zoneKey);
     if(pool.length===0) continue;
     battle = { pool: pool, zone: zoneKey };
     nextBattleQuestion();
@@ -205,6 +205,8 @@ var __simCount = 0;
     battle.opts.forEach(function(o){ if(uniq[o]) dup = true; uniq[o] = true; });
     if(dup) __simErrors.push(tag + '：opts 有重複選項 → ' + JSON.stringify(battle.opts));
     if(battle.opts.length < 2 || battle.opts.length > 4) __simErrors.push(tag + '：opts 數量不合理（' + battle.opts.length + '）');
+    if(!battle.explain || battle.explain.indexOf('undefined') !== -1) __simErrors.push(tag + '：答錯解析是空的或含 undefined → ' + battle.explain);
+    if(battle.qtype !== 'oddOne' && battle.explain.indexOf(battle.answer) === -1) __simErrors.push(tag + '：解析沒有提到正解 ' + battle.answer + ' → ' + battle.explain);
     // 答案唯一性：用本腳本的規則檢查「其他選項有沒有也是對的」
     if(battle.qtype === 'category'){
       var also = ALSO_TRUE[battle.answer] || [];
