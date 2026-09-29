@@ -70,7 +70,7 @@ function check(cond, msg){ if(!cond) __dataErrors.push(msg); }
 
 check(ELEMENTS.length === 56, 'ELEMENTS（教學元素）數量應為 56，實際 ' + ELEMENTS.length);
 check(FULL_ELEMENTS.length === 118, 'FULL_ELEMENTS 數量應為 118，實際 ' + FULL_ELEMENTS.length);
-check(RECIPES.length === 46, 'RECIPES 數量應為 46，實際 ' + RECIPES.length);
+check(RECIPES.length === 47, 'RECIPES 數量應為 47，實際 ' + RECIPES.length);
 
 (function(){
   var seen = {};
@@ -110,6 +110,34 @@ RECIPES.forEach(function(r){
     var key = r.r.slice().sort().join(',');
     if(seen[key]) __dataErrors.push('配方輸入組合重複：' + key + '（' + seen[key] + ' / ' + r.product + '）');
     seen[key] = r.product;
+  });
+})();
+
+// ---------- 找碴題窮舉：每個反應配方 × 每個可被換掉的元素 × 每個候選錯誤元素，換完的方程式不可是真實化學 ----------
+// 這份清單刻意用 ASCII 另寫一份，不引用 index.html 的 REAL_LOOKALIKE_PRODUCTS，
+// 這樣即使有人改掉程式裡的過濾條件或清單，這裡仍會獨立抓到
+var __eqErrors = [];
+var __eqCombos = 0;
+var __eqNoCandidate = [];
+(function(){
+  var KNOWN_REAL = ('B2O3 As2O3 Sb2O3 BCl3 PCl3 AsCl3 SbCl3 CCl4 SiCl4 GeCl4 TeCl4 SeCl4 GeCl2 TeCl2 SeCl2 SCl2 ' +
+    'CeO2 PbO2 PtO2 UO2 WO2 GeO2 SeO2 TeO2 GeO GeS AsS XeF2 KrF2 GeF2 OF2 F2O NO NO2 N2O N2O3 NCl3 Cl2O ClO2 Br2O ' +
+    'H2S HI ICl ClI ICl3 BrCl FCl BrI Li2O Cu2O Ag2O Rb2O Cs2O LiCl CuCl AgCl AuCl CsCl RbCl InCl NLi3 AlH3 UH3 ' +
+    'CsO2 RbO2 HLi HNa HK HCs HRb').split(' ');
+  var SUB = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
+  function ascii(s){ return s.replace(/[₀-₉]/g, function(c){ return SUB[c]; }); }
+  RECIPES.filter(function(r){ return r.type==='reaction'; }).forEach(function(recipe){
+    recipe.r.forEach(function(rightSym){
+      var cands = equationWrongCandidates(recipe, rightSym);
+      if(cands.length===0) __eqNoCandidate.push(recipe.name + '（換 ' + rightSym + '）');
+      cands.forEach(function(w){
+        __eqCombos++;
+        var fake = recipe.eq.split(rightSym).join(w.sym);
+        var prod = ascii(fake.split('→')[1]).trim().replace(/^\\d+\\s*/, '');
+        if(KNOWN_REAL.indexOf(prod) !== -1) __eqErrors.push('「' + fake + '」是真實存在的化學反應，不能當找碴題（原配方：' + recipe.name + '）');
+        if(new RegExp(rightSym + '[a-z]').test(recipe.eq.replace(new RegExp(rightSym + '(?![a-z])','g'), ''))) __eqErrors.push(recipe.name + '：換 ' + rightSym + ' 時會誤換到其他元素符號的一部分');
+      });
+    });
   });
 })();
 
@@ -162,6 +190,9 @@ const dataErrors = sandbox.__dataErrors || [];
 const simErrors = sandbox.__simErrors || [];
 const simCount = sandbox.__simCount || 0;
 const qtypeCounts = sandbox.__qtypeCounts || {};
+const eqErrors = sandbox.__eqErrors || [];
+const eqCombos = sandbox.__eqCombos || 0;
+const eqNoCandidate = sandbox.__eqNoCandidate || [];
 
 console.log('=== 資料檢查 ===');
 if (dataErrors.length === 0) {
@@ -179,6 +210,16 @@ if (simErrors.length === 0) {
   if (simErrors.length > 30) console.log(`...其餘 ${simErrors.length - 30} 筆省略`);
 }
 
-const totalErrors = dataErrors.length + simErrors.length;
+console.log('\n=== 找碴題窮舉（' + eqCombos + ' 種換法） ===');
+if (eqCombos === 0) eqErrors.push('窮舉到 0 種換法，檢查沒有實際執行');
+if (eqErrors.length === 0) {
+  console.log('✅ 沒有任何一種換法會變成真實存在的化學反應');
+} else {
+  eqErrors.slice(0, 30).forEach(msg => console.log('❌ ' + msg));
+  if (eqErrors.length > 30) console.log(`...其餘 ${eqErrors.length - 30} 筆省略`);
+}
+if (eqNoCandidate.length) console.log('ℹ️ 這些情況找不到可用的錯誤元素，會自動改出其他題型：' + eqNoCandidate.join('、'));
+
+const totalErrors = dataErrors.length + simErrors.length + eqErrors.length;
 console.log('\n' + (totalErrors === 0 ? '🎉 全部通過！' : `共發現 ${totalErrors} 個問題`));
 process.exit(totalErrors === 0 ? 0 : 1);

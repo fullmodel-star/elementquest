@@ -299,36 +299,36 @@
 <script>
 /* ---------- 資料：國中常見元素 + 分區 + 週期表座標 ---------- */
 const ELEMENTS = [
- {sym:"H",zh:"氫",cat:"非金屬",zone:"nonmetal",period:1,group:1,emoji:"💧",fact:"宇宙中最輕、最多的元素。燃燒後生成水：2H₂+O₂→2H₂O。液態氫可作火箭燃料，但需極低溫儲存。"},
+ {sym:"H",zh:"氫",cat:"非金屬",zone:"nonmetal",period:1,group:1,emoji:"💧",fact:"宇宙中最輕、最多的元素。燃燒後生成水：2H₂+O₂→2H₂O。氫氣點火會有爆鳴聲，所以點燃前要先檢驗純度。液態氫可作火箭燃料，但需極低溫儲存。"},
  {sym:"He",zh:"氦",cat:"鈍氣",zone:"noble",period:1,group:18,emoji:"🎈",fact:"第二輕元素，化學性質極穩定不易反應。用於填充氣球、飛船，吸入會讓聲音變尖（但有危險，勿輕易嘗試）。"},
  {sym:"Li",zh:"鋰",cat:"鹼金屬",zone:"alkali",period:2,group:1,emoji:"🔋",fact:"最輕的金屬，質軟可用刀切。是鋰電池（手機、電動車）的核心元素，遇水會反應產生氫氣（比鈉溫和，但仍具危險性）。"},
  {sym:"C",zh:"碳",cat:"非金屬",zone:"nonmetal",period:2,group:14,emoji:"💎",fact:"生命的基礎元素！鑽石與石墨都是純碳，只是原子排列方式不同。燃燒生成CO₂：C+O₂→CO₂。"},
  {sym:"N",zh:"氮",cat:"非金屬",zone:"nonmetal",period:2,group:15,emoji:"❄️",fact:"空氣中含量最多的氣體（約78%），化學性質穩定。液態氮溫度極低，常用於急速冷凍食品或保存細胞。"},
- {sym:"O",zh:"氧",cat:"非金屬",zone:"nonmetal",period:2,group:16,emoji:"🫁",fact:"生物呼吸必需的氣體，佔空氣約21%。也是助燃劑，能使物質燃燒得更旺。"},
+ {sym:"O",zh:"氧",cat:"非金屬",zone:"nonmetal",period:2,group:16,emoji:"🫁",fact:"生物呼吸必需的氣體，佔空氣約21%。具有助燃性，能使物質燃燒得更旺；能讓帶火星的木條復燃，這就是檢驗氧氣的方法。"},
  {sym:"F",zh:"氟",cat:"鹵素",zone:"halogen",period:2,group:17,emoji:"🦷",fact:"化學性質最活潑的元素之一。牙膏中的「氟化物」能強化琺瑯質、預防蛀牙。"},
  {sym:"Ne",zh:"氖",cat:"鈍氣",zone:"noble",period:2,group:18,emoji:"💡",fact:"通電時發出鮮豔橘紅光，是「霓虹燈」(neon)名稱的由來，常用於招牌燈管。"},
- {sym:"Na",zh:"鈉",cat:"鹼金屬",zone:"alkali",period:3,group:1,emoji:"🧂",fact:"活性極大，丟進水裡會劇烈反應甚至起火：2Na+2H₂O→2NaOH+H₂。與氯氣反應生成我們每天吃的食鹽 NaCl。"},
+ {sym:"Na",zh:"鈉",cat:"鹼金屬",zone:"alkali",period:3,group:1,emoji:"💥",fact:"活性極大，丟進水裡會劇烈反應甚至起火：2Na+2H₂O→2NaOH+H₂，所以要保存在煤油中隔絕空氣和水。與氯氣反應生成食鹽的主成分氯化鈉 NaCl。"},
  {sym:"Mg",zh:"鎂",cat:"鹼土金屬",zone:"alkaline",period:3,group:2,emoji:"✨",fact:"燃燒時會發出刺眼的白光：2Mg+O₂→2MgO，早期攝影閃光燈就是用鎂粉燃燒發光。"},
- {sym:"Al",zh:"鋁",cat:"金屬",zone:"metal",period:3,group:13,emoji:"🥫",fact:"地殼中含量最多的金屬。質輕、抗腐蝕，用於飲料罐、飛機機身。"},
+ {sym:"Al",zh:"鋁",cat:"金屬",zone:"metal",period:3,group:13,emoji:"🥫",fact:"地殼中含量最多的金屬。質輕，用於飲料罐、飛機機身。鋁其實比鐵活潑，但表面會生成一層緻密的氧化鋁保護膜，阻止內部繼續被腐蝕，所以看起來很耐用。"},
  {sym:"Si",zh:"矽",cat:"類金屬",zone:"nonmetal",period:3,group:14,emoji:"💻",fact:"地殼中含量第二多的元素（僅次於氧），是製造電腦晶片與玻璃的核心原料。"},
- {sym:"P",zh:"磷",cat:"非金屬",zone:"nonmetal",period:3,group:15,emoji:"🔥",fact:"安全火柴盒側面的摩擦面塗有紅磷，摩擦生熱引燃火柴頭的氧化劑。磷也是DNA、骨骼的重要組成元素。"},
- {sym:"S",zh:"硫",cat:"非金屬",zone:"nonmetal",period:3,group:16,emoji:"🌋",fact:"黃色固體，燃燒時發出刺鼻藍色火焰並產生SO₂，火山口常見硫磺結晶。"},
+ {sym:"P",zh:"磷",cat:"非金屬",zone:"nonmetal",period:3,group:15,emoji:"🔥",fact:"安全火柴盒側面的摩擦面塗有紅磷，摩擦生熱後引燃火柴頭（火柴頭含氯酸鉀等氧化劑與可燃物）。磷也是DNA、骨骼的重要組成元素。"},
+ {sym:"S",zh:"硫",cat:"非金屬",zone:"nonmetal",period:3,group:16,emoji:"🌋",fact:"黃色固體，在空氣中燃燒發出淡藍色火焰（在純氧中為藍紫色），產生有刺激性臭味的二氧化硫 SO₂。火山口常見硫磺結晶。"},
  {sym:"Cl",zh:"氯",cat:"鹵素",zone:"halogen",period:3,group:17,emoji:"🏊",fact:"黃綠色有毒氣體，常用於游泳池消毒殺菌。與鈉反應生成食鹽：2Na+Cl₂→2NaCl。"},
  {sym:"Ar",zh:"氬",cat:"鈍氣",zone:"noble",period:3,group:18,emoji:"🔦",fact:"空氣中含量第三多的氣體（約0.9%），因化學性質穩定，常填充於燈泡與焊接保護氣中。"},
- {sym:"K",zh:"鉀",cat:"鹼金屬",zone:"alkali",period:4,group:1,emoji:"🌱",fact:"活性比鈉更強，遇水反應更劇烈。是植物生長必需的肥料三要素之一（氮磷鉀）。"},
- {sym:"Ca",zh:"鈣",cat:"鹼土金屬",zone:"alkaline",period:4,group:2,emoji:"🦴",fact:"構成骨骼與牙齒的主要元素。碳酸鈣(CaCO₃)是石灰岩、貝殼、蛋殼的主成分。"},
- {sym:"Fe",zh:"鐵",cat:"過渡金屬",zone:"metal",period:4,group:8,emoji:"⚙️",fact:"人類使用最廣泛的金屬，生鏽是氧化反應：4Fe+3O₂→2Fe₂O₃。血紅素也含鐵，負責運送氧氣。"},
+ {sym:"K",zh:"鉀",cat:"鹼金屬",zone:"alkali",period:4,group:1,emoji:"🌱",fact:"活性比鈉更強，遇水反應更劇烈，同樣要保存在煤油中。是植物生長必需的肥料三要素之一（氮磷鉀）。"},
+ {sym:"Ca",zh:"鈣",cat:"鹼土金屬",zone:"alkaline",period:4,group:2,emoji:"🦴",fact:"構成骨骼與牙齒的主要元素。碳酸鈣(CaCO₃)是石灰岩、貝殼、蛋殼的主成分。氫氧化鈣的水溶液就是石灰水，遇到二氧化碳會變混濁，是檢驗二氧化碳的方法。"},
+ {sym:"Fe",zh:"鐵",cat:"過渡金屬",zone:"metal",period:4,group:8,emoji:"⚙️",fact:"人類使用最廣泛的金屬。鐵生鏽要同時接觸水和氧氣，鐵鏽的主成分是含水的氧化鐵；鐵絲在純氧中燃燒會火星四射，生成四氧化三鐵 Fe₃O₄。血紅素也含鐵，負責運送氧氣。"},
  {sym:"Cu",zh:"銅",cat:"過渡金屬",zone:"metal",period:4,group:11,emoji:"🔌",fact:"導電導熱性極佳，是電線的主要材料。長期暴露空氣中會生成銅綠（鹼式碳酸銅）。"},
  {sym:"Zn",zh:"鋅",cat:"過渡金屬",zone:"metal",period:4,group:12,emoji:"🛠️",fact:"常鍍在鐵器表面防鏽（鍍鋅鐵皮）。加入稀鹽酸會產生氫氣：Zn+2HCl→ZnCl₂+H₂。"},
  {sym:"Br",zh:"溴",cat:"鹵素",zone:"halogen",period:4,group:17,emoji:"🧯",fact:"常溫下唯一是液態的非金屬元素，深紅棕色、有刺激性氣味，用於阻燃劑。"},
  {sym:"Ag",zh:"銀",cat:"過渡金屬",zone:"metal",period:5,group:11,emoji:"🥈",fact:"導電性是所有金屬中最好的。銀器接觸含硫物質會變黑：2Ag+S→Ag₂S。"},
  {sym:"Sn",zh:"錫",cat:"金屬",zone:"metal",period:5,group:14,emoji:"🔧",fact:"質軟易延展，常與銅混合成「青銅」，也用於焊接電路板的焊錫。"},
- {sym:"I",zh:"碘",cat:"鹵素",zone:"halogen",period:5,group:17,emoji:"🩺",fact:"碘酒是常見消毒藥水的成分，海帶、紫菜含豐富的碘，是甲狀腺素的重要原料。"},
- {sym:"Ba",zh:"鋇",cat:"鹼土金屬",zone:"alkaline",period:6,group:2,emoji:"🩻",fact:"鋇的化合物能吸收X光，做胃部檢查時喝的「鋇劑」讓腸胃在X光片上顯影。"},
+ {sym:"I",zh:"碘",cat:"鹵素",zone:"halogen",period:5,group:17,emoji:"🩺",fact:"碘是碘酒（常見消毒藥水）的主要成分。碘液遇到澱粉會變成藍黑色，可用來檢驗澱粉。海帶、紫菜含豐富的碘，是甲狀腺素的重要原料。"},
+ {sym:"Ba",zh:"鋇",cat:"鹼土金屬",zone:"alkaline",period:6,group:2,emoji:"🏥",fact:"硫酸鋇(BaSO₄)不溶於水、能吸收X光，做胃部檢查時喝的「鋇劑」就是它，能讓腸胃在X光片上顯影；但可溶於水的鋇化合物有劇毒。"},
  {sym:"W",zh:"鎢",cat:"過渡金屬",zone:"metal",period:6,group:6,emoji:"💡",fact:"熔點最高的金屬（約3422°C），早期白熾燈泡的燈絲就是用鎢絲製成。"},
  {sym:"Au",zh:"金",cat:"過渡金屬",zone:"metal",period:6,group:11,emoji:"🥇",fact:"化學性質極穩定，幾乎不與空氣、水反應，是「不會生鏽的金屬」，自古用於貨幣與飾品。"},
  {sym:"Hg",zh:"汞",cat:"過渡金屬",zone:"metal",period:6,group:12,emoji:"🌡️",fact:"常溫下唯一是液態的金屬（水銀）。舊式體溫計、血壓計曾使用，因有毒現多已禁用。"},
- {sym:"Pb",zh:"鉛",cat:"金屬",zone:"metal",period:6,group:14,emoji:"🚱",fact:"密度大、質軟。曾用於水管、油漆，因有毒性現已大幅減少使用，鉛中毒對神經系統有害。"},
+ {sym:"Pb",zh:"鉛",cat:"金屬",zone:"metal",period:6,group:14,emoji:"🚱",fact:"密度大、質軟。汽車的「鉛蓄電池」（電瓶）至今仍使用鉛。曾用於水管、油漆，因有毒性現已大幅減少使用，鉛中毒對神經系統有害。"},
  {sym:"U",zh:"鈾",cat:"放射性金屬",zone:"boss",period:7,group:3,emoji:"☢️",fact:"具放射性，核分裂可釋放巨大能量，是核能發電與核武器的原料，需嚴格管制使用。"},
  {sym:"B",zh:"硼",cat:"類金屬",zone:"nonmetal",period:2,group:13,emoji:"🧴",fact:"硼砂用於清潔劑與陶瓷上釉；硼酸曾用於眼藥水消毒，但濃度過高有毒性，現已少用。"},
  {sym:"Se",zh:"硒",cat:"非金屬",zone:"nonmetal",period:4,group:16,emoji:"☀️",fact:"人體必需的微量元素，存在於堅果與海鮮中；也因為導電性會隨光線改變，用於太陽能電池與影印機感光鼓。"},
@@ -336,20 +336,20 @@ const ELEMENTS = [
  {sym:"Xe",zh:"氙",cat:"鈍氣",zone:"noble",period:5,group:18,emoji:"🚗",fact:"用於高亮度的「氙氣大燈」（HID車燈）與攝影棚閃光燈，發出接近日光的白光。"},
  {sym:"Rn",zh:"氡",cat:"鈍氣",zone:"noble",period:6,group:18,emoji:"☢️",fact:"具放射性的氣體，可能從土壤或岩石中逸散進入室內，長期吸入有致癌風險，所以房屋需要保持通風。"},
  {sym:"Rb",zh:"銣",cat:"鹼金屬",zone:"alkali",period:5,group:1,emoji:"⏰",fact:"活性比鉀更強，遇空氣就可能自燃，常用於精密的原子鐘；焰色測試呈紫紅色。"},
- {sym:"Cs",zh:"銫",cat:"鹼金屬",zone:"alkali",period:6,group:1,emoji:"⏱️",fact:"鹼金屬中活性最強的穩定元素之一。「銫原子鐘」是目前世界最精準的計時標準，1秒的定義就是根據銫-133原子振動。"},
+ {sym:"Cs",zh:"銫",cat:"鹼金屬",zone:"alkali",period:6,group:1,emoji:"⏱️",fact:"鹼金屬中活性最強的穩定元素之一。「銫原子鐘」非常精準，國際標準的「1秒」就是根據銫-133原子的振動來定義。"},
  {sym:"Be",zh:"鈹",cat:"鹼土金屬",zone:"alkaline",period:2,group:2,emoji:"✈️",fact:"質輕又硬，用於航太結構與X光機的窗口材料，但加工時粉塵具毒性，需小心處理。"},
  {sym:"Sr",zh:"鍶",cat:"鹼土金屬",zone:"alkaline",period:5,group:2,emoji:"🎆",fact:"燃燒時會發出鮮豔的紅色火焰，是煙火中紅色的主要來源。"},
- {sym:"Ni",zh:"鎳",cat:"過渡金屬",zone:"alloy",period:4,group:10,emoji:"🪙",fact:"常與鉻混合製成不鏽鋼，也是許多硬幣的材料之一，部分人接觸鎳會有過敏反應。"},
+ {sym:"Ni",zh:"鎳",cat:"過渡金屬",zone:"alloy",period:4,group:10,emoji:"🪙",fact:"與鉻一起加入鐵中製成不鏽鋼，也是許多硬幣的材料之一，部分人接觸鎳會有過敏反應。"},
  {sym:"Cr",zh:"鉻",cat:"過渡金屬",zone:"alloy",period:4,group:6,emoji:"🚿",fact:"鍍鉻能讓金屬表面光亮防鏽，浴室水龍頭常見鍍鉻處理，也是不鏽鋼「不生鏽」的關鍵成分。"},
  {sym:"Ti",zh:"鈦",cat:"過渡金屬",zone:"alloy",period:4,group:4,emoji:"🦴",fact:"質輕、堅固又抗腐蝕，常用於飛機機身、眼鏡框與人工關節等需要耐用又輕巧的場合。"},
  {sym:"Pt",zh:"鉑",cat:"過渡金屬",zone:"alloy",period:6,group:10,emoji:"🚙",fact:"化學性質非常穩定的貴金屬，是汽車「觸媒轉化器」的核心材料，能把廢氣中的有害物質轉成無害氣體。"},
  {sym:"Co",zh:"鈷",cat:"過渡金屬",zone:"alloy",period:4,group:9,emoji:"🔋",fact:"鋰電池正極材料的重要成分，也用於燒製藍色玻璃與陶瓷顏料，也就是「鈷藍色」的由來。"},
- {sym:"Mn",zh:"錳",cat:"過渡金屬",zone:"alloy",period:4,group:7,emoji:"🔋",fact:"常用於製造乾電池的正極與合金鋼，能大幅增加鋼鐵的硬度與耐磨性。"},
- {sym:"Ge",zh:"鍺",cat:"類金屬",zone:"nonmetal",period:4,group:14,emoji:"📻",fact:"早期收音機的礦石檢波器使用鍺半導體；現在則用於紅外線鏡頭與光纖通訊材料。"},
+ {sym:"Mn",zh:"錳",cat:"過渡金屬",zone:"alloy",period:4,group:7,emoji:"🔋",fact:"二氧化錳是國中製氧實驗的主角：加進雙氧水能加快產生氧氣，本身反應前後不變，是「催化劑」。二氧化錳也是乾電池內的材料；錳還能加進鋼鐵增加硬度與耐磨性。"},
+ {sym:"Ge",zh:"鍺",cat:"類金屬",zone:"nonmetal",period:4,group:14,emoji:"📻",fact:"1947年發明的第一個電晶體就是用鍺做的，早期收音機也用鍺二極體當檢波器；現在則用於紅外線鏡頭與光纖通訊材料。"},
  {sym:"As",zh:"砷",cat:"類金屬",zone:"nonmetal",period:4,group:15,emoji:"☠️",fact:"砒霜的主要成分，自古是知名毒藥；現代則微量用於半導體摻雜與部分合金，使用上需嚴格管制。"},
  {sym:"Sb",zh:"銻",cat:"類金屬",zone:"nonmetal",period:5,group:15,emoji:"🧯",fact:"常加入塑膠與紡織品作阻燃劑，也用於鉛合金增加硬度；古埃及人曾用銻礦當眼影原料。"},
  {sym:"Te",zh:"碲",cat:"類金屬",zone:"nonmetal",period:5,group:16,emoji:"☀️",fact:"用於CdTe薄膜太陽能電池與特殊合金，也可少量加入鋼鐵中改善加工性。"},
- {sym:"Ga",zh:"鎵",cat:"金屬",zone:"alloy",period:4,group:13,emoji:"🫳",fact:"熔點只有約30°C，放在手心就能被體溫融化，是很受歡迎的科學小把戲；也是LED與半導體的重要材料。"},
+ {sym:"Ga",zh:"鎵",cat:"金屬",zone:"alloy",period:4,group:13,emoji:"🖐️",fact:"熔點只有約30°C，放在手心就能被體溫融化，是很受歡迎的科學小把戲；也是LED與半導體的重要材料。"},
  {sym:"In",zh:"銦",cat:"金屬",zone:"alloy",period:5,group:13,emoji:"📱",fact:"手機、平板觸控螢幕的透明導電層(ITO)主要成分之一，是現代觸控科技不可或缺的稀有金屬。"},
  {sym:"Bi",zh:"鉍",cat:"金屬",zone:"alloy",period:6,group:15,emoji:"🌈",fact:"毒性極低，常作為鉛的環保替代品；結晶時會形成七彩階梯狀的漂亮晶體，是礦物收藏愛好者的心頭好。"},
  {sym:"La",zh:"鑭",cat:"鑭系",zone:"lanth",period:6,group:3,emoji:"🔥",fact:"打火機「打火石」的主要成分之一，也用於相機與望遠鏡的高折射率鏡片。"},
@@ -372,8 +372,8 @@ const CATEGORY_INFO = {
   "鹵素":{emoji:"🧪", fact:"鹵素，化學性質活潑，容易與金屬反應形成鹽類化合物。"},
   "鈍氣":{emoji:"💫", fact:"鈍氣（惰性氣體），化學性質非常穩定，很少與其他元素發生反應。"},
   "鑭系":{emoji:"🧲", fact:"鑭系元素，彼此性質相近，常用於磁鐵、螢光材料與高科技產品。"},
-  "錒系":{emoji:"☢️", fact:"錒系元素，多半具放射性，部分用於核能發電，需嚴格管制使用。"},
-  "人工合成":{emoji:"🧫", fact:"人工合成元素，只能在實驗室用粒子加速器製造出極少量，極不穩定，瞬間就會衰變。"},
+  "錒系":{emoji:"☢️", fact:"錒系元素，全部都具有放射性，其中鈾、鈽可用於核能發電，需嚴格管制使用。"},
+  "人工合成":{emoji:"🧫", fact:"人工合成元素，只能在實驗室用粒子加速器製造出極少量，非常不穩定，大多在極短時間內就會衰變。"},
   "放射性金屬":{emoji:"☢️", fact:"具放射性的金屬元素，需嚴格管制使用。"}
 };
 /* 全部118個元素的中文名與分類（僅供全貌總覽查看；只有上方 ELEMENTS 裡的 56 個是遊戲實際教學範圍） */
@@ -423,49 +423,50 @@ const ZONES = [
 ];
 
 const RECIPES = [
- {r:["H","O"], product:"H₂O", name:"水", eq:"2H₂ + O₂ → 2H₂O", emoji:"💧", type:"reaction", rarity:"common"},
- {r:["C","O"], product:"CO₂", name:"二氧化碳", eq:"C + O₂ → CO₂", emoji:"🌬️", type:"reaction", rarity:"common"},
+ {r:["H","O"], product:"H₂O", name:"水（氫氣燃燒的唯一產物，所以氫是乾淨燃料）", eq:"2H₂ + O₂ → 2H₂O", emoji:"💧", type:"reaction", rarity:"common"},
+ {r:["C","O"], product:"CO₂", name:"二氧化碳（使澄清石灰水變混濁；固態叫乾冰）", eq:"C + O₂ → CO₂", emoji:"🌬️", type:"reaction", rarity:"common"},
  {r:["Mg","O"], product:"MgO", name:"氧化鎂（刺眼白光）", eq:"2Mg + O₂ → 2MgO", emoji:"✨", type:"reaction", rarity:"common"},
- {r:["Fe","S"], product:"FeS", name:"硫化亞鐵", eq:"Fe + S → FeS", emoji:"⚙️", type:"reaction", rarity:"common"},
- {r:["Na","Cl"], product:"NaCl", name:"食鹽", eq:"2Na + Cl₂ → 2NaCl", emoji:"🧂", type:"reaction", rarity:"common"},
- {r:["Zn","Cl"], product:"ZnCl₂", name:"氯化鋅", eq:"Zn + Cl₂ → ZnCl₂", emoji:"🛠️", type:"reaction", rarity:"common"},
- {r:["Cu","S"], product:"Cu₂S", name:"硫化亞銅", eq:"2Cu + S → Cu₂S", emoji:"🔌", type:"reaction", rarity:"common"},
- {r:["Fe","O"], product:"Fe₂O₃", name:"氧化鐵（鐵鏽）", eq:"4Fe + 3O₂ → 2Fe₂O₃", emoji:"🟤", type:"reaction", rarity:"common"},
+ {r:["Fe","S"], product:"FeS", name:"硫化亞鐵（鐵粉加硫粉加熱，產物不再被磁鐵吸引）", eq:"Fe + S → FeS", emoji:"⚙️", type:"reaction", rarity:"common"},
+ {r:["Na","Cl"], product:"NaCl", name:"氯化鈉（食鹽的主成分）", eq:"2Na + Cl₂ → 2NaCl", emoji:"🧂", type:"reaction", rarity:"common"},
+ {r:["Zn","Cl"], product:"ZnCl₂", name:"氯化鋅（焊接用的助焊劑）", eq:"Zn + Cl₂ → ZnCl₂", emoji:"🛠️", type:"reaction", rarity:"common"},
+ {r:["Cu","S"], product:"Cu₂S", name:"硫化亞銅（輝銅礦的主成分，煉銅原料）", eq:"2Cu + S → Cu₂S", emoji:"🔌", type:"reaction", rarity:"common"},
+ {r:["Fe","O"], product:"Fe₂O₃", name:"氧化鐵（鐵鏽的主成分；鐵生鏽還需要水）", eq:"4Fe + 3O₂ → 2Fe₂O₃", emoji:"🟤", type:"reaction", rarity:"common"},
  {r:["Ag","S"], product:"Ag₂S", name:"硫化銀（銀變黑）", eq:"2Ag + S → Ag₂S", emoji:"🥈", type:"reaction", rarity:"rare"},
- {r:["Al","O"], product:"Al₂O₃", name:"氧化鋁", eq:"4Al + 3O₂ → 2Al₂O₃", emoji:"🥫", type:"reaction", rarity:"common"},
- {r:["K","Cl"], product:"KCl", name:"氯化鉀", eq:"2K + Cl₂ → 2KCl", emoji:"🌱", type:"reaction", rarity:"common"},
- {r:["Ca","O"], product:"CaO", name:"生石灰", eq:"2Ca + O₂ → 2CaO", emoji:"🦴", type:"reaction", rarity:"common"},
- {r:["Ba","O"], product:"BaO", name:"氧化鋇", eq:"2Ba + O₂ → 2BaO", emoji:"🩻", type:"reaction", rarity:"rare"},
- {r:["Al","Cl"], product:"AlCl₃", name:"氯化鋁", eq:"2Al + 3Cl₂ → 2AlCl₃", emoji:"🥫", type:"reaction", rarity:"common"},
- {r:["Sn","O"], product:"SnO₂", name:"氧化錫", eq:"Sn + O₂ → SnO₂", emoji:"🔧", type:"reaction", rarity:"common"},
+ {r:["Al","O"], product:"Al₂O₃", name:"氧化鋁（鋁表面的保護膜；紅寶石、藍寶石的主成分）", eq:"4Al + 3O₂ → 2Al₂O₃", emoji:"🥫", type:"reaction", rarity:"common"},
+ {r:["K","Cl"], product:"KCl", name:"氯化鉀（鉀肥、低鈉鹽）", eq:"2K + Cl₂ → 2KCl", emoji:"🌱", type:"reaction", rarity:"common"},
+ {r:["Ca","O"], product:"CaO", name:"生石灰（食品乾燥劑，遇水會大量放熱）", eq:"2Ca + O₂ → 2CaO", emoji:"📦", type:"reaction", rarity:"common"},
+ {r:["Ba","O"], product:"BaO", name:"氧化鋇（有毒！X光用的鋇劑其實是硫酸鋇）", eq:"2Ba + O₂ → 2BaO", emoji:"⚠️", type:"reaction", rarity:"rare"},
+ {r:["Al","Cl"], product:"AlCl₃", name:"氯化鋁（止汗劑成分之一）", eq:"2Al + 3Cl₂ → 2AlCl₃", emoji:"🥫", type:"reaction", rarity:"common"},
+ {r:["Sn","O"], product:"SnO₂", name:"氧化錫（錫石的主成分，煉錫原料）", eq:"Sn + O₂ → SnO₂", emoji:"🔧", type:"reaction", rarity:"common"},
  {r:["Pb","S"], product:"PbS", name:"硫化鉛（方鉛礦）", eq:"Pb + S → PbS", emoji:"🚱", type:"reaction", rarity:"rare"},
  {r:["Hg","S"], product:"HgS", name:"硫化汞（硃砂）", eq:"Hg + S → HgS", emoji:"🌡️", type:"reaction", rarity:"rare"},
- {r:["Cu","O"], product:"CuO", name:"氧化銅", eq:"2Cu + O₂ → 2CuO", emoji:"🔌", type:"reaction", rarity:"common"},
- {r:["Zn","O"], product:"ZnO", name:"氧化鋅", eq:"2Zn + O₂ → 2ZnO", emoji:"🛠️", type:"reaction", rarity:"common"},
- {r:["Na","O"], product:"Na₂O", name:"氧化鈉", eq:"4Na + O₂ → 2Na₂O", emoji:"🧂", type:"reaction", rarity:"common"},
- {r:["K","O"], product:"K₂O", name:"氧化鉀", eq:"4K + O₂ → 2K₂O", emoji:"🌱", type:"reaction", rarity:"common"},
+ {r:["Cu","O"], product:"CuO", name:"氧化銅（銅在空氣中加熱變黑，就是生成了它）", eq:"2Cu + O₂ → 2CuO", emoji:"🔌", type:"reaction", rarity:"common"},
+ {r:["Zn","O"], product:"ZnO", name:"氧化鋅（防曬乳、痱子粉的成分）", eq:"2Zn + O₂ → 2ZnO", emoji:"🛠️", type:"reaction", rarity:"common"},
+ {r:["Na","O"], product:"Na₂O", name:"氧化鈉（溶於水變成強鹼氫氧化鈉）", eq:"4Na + O₂ → 2Na₂O", emoji:"🧪", type:"reaction", rarity:"common"},
+ {r:["K","O"], product:"K₂O", name:"氧化鉀（溶於水變成強鹼氫氧化鉀）", eq:"4K + O₂ → 2K₂O", emoji:"🌱", type:"reaction", rarity:"common"},
  {r:["H","Cl"], product:"HCl", name:"氯化氫（鹽酸原料）", eq:"H₂ + Cl₂ → 2HCl", emoji:"🧪", type:"reaction", rarity:"common"},
  {r:["H","N"], product:"NH₃", name:"氨（阿摩尼亞）", eq:"N₂ + 3H₂ → 2NH₃", emoji:"💨", type:"reaction", rarity:"rare"},
  {r:["Si","O"], product:"SiO₂", name:"二氧化矽（玻璃原料）", eq:"Si + O₂ → SiO₂", emoji:"💻", type:"reaction", rarity:"common"},
- {r:["P","O"], product:"P₂O₅", name:"五氧化二磷", eq:"4P + 5O₂ → 2P₂O₅", emoji:"🔥", type:"reaction", rarity:"common"},
- {r:["S","O"], product:"SO₂", name:"二氧化硫", eq:"S + O₂ → SO₂", emoji:"🌋", type:"reaction", rarity:"common"},
+ {r:["P","O"], product:"P₂O₅", name:"五氧化二磷（吸水性極強的乾燥劑）", eq:"4P + 5O₂ → 2P₂O₅", emoji:"🔥", type:"reaction", rarity:"common"},
+ {r:["S","O"], product:"SO₂", name:"二氧化硫（造成酸雨的主要污染物之一）", eq:"S + O₂ → SO₂", emoji:"🌋", type:"reaction", rarity:"common"},
  {r:["Ca","Cl"], product:"CaCl₂", name:"氯化鈣（除濕劑）", eq:"Ca + Cl₂ → CaCl₂", emoji:"🦴", type:"reaction", rarity:"common"},
- {r:["Mg","Cl"], product:"MgCl₂", name:"氯化鎂", eq:"Mg + Cl₂ → MgCl₂", emoji:"✨", type:"reaction", rarity:"common"},
+ {r:["Mg","Cl"], product:"MgCl₂", name:"氯化鎂（鹽滷的主成分，做豆腐的凝固劑）", eq:"Mg + Cl₂ → MgCl₂", emoji:"✨", type:"reaction", rarity:"common"},
  {r:["Ti","O"], product:"TiO₂", name:"二氧化鈦（白色顏料）", eq:"Ti + O₂ → TiO₂", emoji:"🎨", type:"reaction", rarity:"common"},
  {r:["Cr","O"], product:"Cr₂O₃", name:"氧化鉻（綠色顏料）", eq:"4Cr + 3O₂ → 2Cr₂O₃", emoji:"🎨", type:"reaction", rarity:"rare"},
- {r:["Ni","O"], product:"NiO", name:"氧化鎳", eq:"2Ni + O₂ → 2NiO", emoji:"🪙", type:"reaction", rarity:"common"},
- {r:["Co","Cl"], product:"CoCl₂", name:"氯化鈷（濕度指示劑，遇濕變粉紅）", eq:"Co + Cl₂ → CoCl₂", emoji:"🔋", type:"reaction", rarity:"rare"},
- {r:["Sr","O"], product:"SrO", name:"氧化鍶", eq:"2Sr + O₂ → 2SrO", emoji:"🎆", type:"reaction", rarity:"common"},
- {r:["Mn","O"], product:"MnO₂", name:"二氧化錳（乾電池原料）", eq:"Mn + O₂ → MnO₂", emoji:"🔋", type:"reaction", rarity:"common"},
- {r:["Ca","F"], product:"CaF₂", name:"螢石（早期牙膏氟化物原料）", eq:"Ca + F₂ → CaF₂", emoji:"🦷", type:"reaction", rarity:"common"},
- {r:["K","I"], product:"KI", name:"碘化鉀（加碘鹽、保護甲狀腺）", eq:"2K + I₂ → 2KI", emoji:"🧂", type:"reaction", rarity:"common"},
+ {r:["Ni","O"], product:"NiO", name:"氧化鎳（陶瓷與玻璃的著色劑）", eq:"2Ni + O₂ → 2NiO", emoji:"🪙", type:"reaction", rarity:"common"},
+ {r:["Co","Cl"], product:"CoCl₂", name:"氯化亞鈷（氯化亞鈷試紙：乾燥時藍色、遇水變粉紅，用來檢驗水）", eq:"Co + Cl₂ → CoCl₂", emoji:"🔋", type:"reaction", rarity:"rare"},
+ {r:["Sr","O"], product:"SrO", name:"氧化鍶（鍶的焰色是洋紅色，用於紅色煙火）", eq:"2Sr + O₂ → 2SrO", emoji:"🎆", type:"reaction", rarity:"common"},
+ {r:["Mn","O"], product:"MnO₂", name:"二氧化錳（雙氧水製氧的催化劑、乾電池材料）", eq:"Mn + O₂ → MnO₂", emoji:"🔋", type:"reaction", rarity:"common"},
+ {r:["Ca","F"], product:"CaF₂", name:"螢石（氟化鈣礦物，工業上氟的主要來源）", eq:"Ca + F₂ → CaF₂", emoji:"🦷", type:"reaction", rarity:"common"},
+ {r:["K","I"], product:"KI", name:"碘化鉀（核災防護碘片的成分，也可作加碘鹽的碘來源）", eq:"2K + I₂ → 2KI", emoji:"💊", type:"reaction", rarity:"common"},
  {r:["Cu","Zn"], product:"黃銅", name:"黃銅合金（門把、薩克斯風）", eq:"Cu + Zn", emoji:"🎷", type:"alloy", rarity:"common"},
  {r:["Cu","Sn"], product:"青銅", name:"青銅合金（銅像、獎牌）", eq:"Cu + Sn", emoji:"🏅", type:"alloy", rarity:"common"},
  {r:["Fe","Cr"], product:"鉻鐵合金", name:"鉻鐵合金（不鏽鋼的基礎）", eq:"Fe + Cr", emoji:"🍳", type:"alloy", rarity:"common"},
  {r:["Ce","Fe"], product:"打火石合金", name:"打火石合金（露營、打火機火花）", eq:"Ce + Fe", emoji:"🔥", type:"alloy", rarity:"rare"},
  {r:["Al","Mg"], product:"鎂鋁合金", name:"鎂鋁合金（筆電、手機外殼）", eq:"Al + Mg", emoji:"💻", type:"alloy", rarity:"common"},
  {r:["Ti","Cl"], product:"TiCl₄", name:"四氯化鈦（軍事煙幕、空中寫字；遇濕氣白煙具腐蝕性）", eq:"Ti + 2Cl₂ → TiCl₄", emoji:"💨", type:"reaction", rarity:"rare"},
- {r:["Sn","Pb"], product:"錫鉛焊料", name:"錫鉛焊料（電路板焊接）", eq:"Sn + Pb", emoji:"🔧", type:"alloy", rarity:"common"},
+ {r:["Sn","Pb"], product:"錫鉛焊料", name:"錫鉛焊料（傳統電路板焊接；因鉛有毒，現多改用無鉛焊錫）", eq:"Sn + Pb", emoji:"🔧", type:"alloy", rarity:"common"},
+ {r:["Fe","C"], product:"鋼", name:"鋼（鐵加入少量碳，比純鐵更硬、更強韌）", eq:"Fe + C", emoji:"🏗️", type:"alloy", rarity:"common"},
  {r:["Fe","Cr","Ni"], product:"不鏽鋼", name:"不鏽鋼（餐具、水槽）", eq:"Fe + Cr + Ni", emoji:"🍴", type:"alloy", rarity:"legendary"},
  {r:["Cu","Sn","Zn"], product:"青銅合金II", name:"複合青銅（鐘、雕像用）", eq:"Cu + Sn + Zn", emoji:"🔔", type:"alloy", rarity:"legendary"},
  {r:["Nd","Fe","B"], product:"釹鐵硼磁鐵", name:"釹鐵硼強力磁鐵（Nd₂Fe₁₄B，耳機喇叭、硬碟）", eq:"Nd₂Fe₁₄B（金屬間化合物，非簡單反應）", emoji:"🧲", type:"alloy", rarity:"legendary"}
@@ -873,7 +874,7 @@ document.getElementById("btnCraft").addEventListener("click", ()=>{
       const bonusChance = hasStar ? rarityChance + 0.15 : rarityChance;
       saveState();
       toast(isAlloy
-        ? `🔩 合成成功：${recipe.name}（${recipe.eq}，這是物理混合的合金，不是化學反應）`
+        ? `🔩 合成成功：${recipe.name}（${recipe.eq}${recipe.eq.includes("金屬間化合物") ? "" : "，這是物理混合的合金，不是化學反應"}）`
         : `⚗️ 合成成功：${recipe.name}（${recipe.eq}）`, false, 3600);
       if(Math.random() < bonusChance){
         state.crystals = (state.crystals||0)+1;
@@ -1105,23 +1106,35 @@ function makeOddOneQuestion(pool, zoneKey){
    規則：換入的元素必須「金屬類⇄非金屬類」跨界（或用鈍氣——鈍氣幾乎不反應，本身就有教育意義），
    且換完的組合不能是遊戲內任何真實配方。優先挑「材料含當前王國元素」的配方，讓找碴題更貼近正在闖的關卡；
    沒有符合的才退回所有已學配方。找不到可用的錯誤元素/選項時回傳 null，交給呼叫端 fallback。 */
-function makeEquationQuestion(pool, zoneKey, madeRecipes){
+/* 換完元素後右邊的產物若是遊戲外真實存在的化合物（例：Al→B 得 2B+3Cl₂→2BCl₃、Ti→C 得 C+2Cl₂→CCl₄、
+   Ca→Xe 得 Xe+F₂→XeF₂），題目就變成「要學生把正確反應改錯」，一律排除。清單由窮舉全部換法後人工判定而來 */
+const REAL_LOOKALIKE_PRODUCTS = new Set(("B₂O₃ As₂O₃ Sb₂O₃ BCl₃ PCl₃ AsCl₃ SbCl₃ CCl₄ SiCl₄ GeCl₄ TeCl₄ SeCl₄ GeCl₂ TeCl₂ SeCl₂ SCl₂ "
+  + "CeO₂ PbO₂ PtO₂ UO₂ WO₂ GeO₂ SeO₂ TeO₂ GeO GeS AsS XeF₂ KrF₂ GeF₂ OF₂ F₂O NO NO₂ N₂O N₂O₃ NCl₃ Cl₂O ClO₂ Br₂O "
+  + "H₂S HI ICl ClI ICl₃ BrCl FCl BrI Li₂O Cu₂O Ag₂O Rb₂O Cs₂O LiCl CuCl AgCl AuCl CsCl RbCl InCl NLi₃ AlH₃ UH₃ "
+  + "CsO₂ RbO₂ HLi HNa HK HCs HRb").split(" "));
+function equationWrongCandidates(recipe, rightSym){
   const METALLIC = new Set(["鹼金屬","鹼土金屬","金屬","過渡金屬","放射性金屬","鑭系"]);
-  const zoneSyms = new Set(zoneElements(zoneKey).map(e=>e.sym));
-  const zoneRecipes = madeRecipes.filter(rc=>rc.r.some(s=>zoneSyms.has(s)));
-  const candidateRecipes = zoneRecipes.length>0 ? zoneRecipes : madeRecipes;
-  const recipe = candidateRecipes[Math.floor(Math.random()*candidateRecipes.length)];
-  const rightSym = recipe.r[Math.floor(Math.random()*recipe.r.length)];
   const rightEl = ELEMENTS.find(e=>e.sym===rightSym);
   const swappedIsRealRecipe = w => RECIPES.some(rc=>{
     const a = recipe.r.map(s=>s===rightSym? w : s).slice().sort();
     const b = rc.r.slice().sort();
     return a.length===b.length && a.every((s,i)=>s===b[i]);
   });
-  const wrongCandidates = ELEMENTS.filter(e =>
+  const fakeProduct = w => recipe.eq.split(rightSym).join(w).split("→")[1].trim().replace(/^\d+\s*/, "");
+  return ELEMENTS.filter(e =>
     e.sym!==rightSym && !recipe.r.includes(e.sym)
     && (e.cat==="鈍氣" || (METALLIC.has(rightEl.cat) ? !METALLIC.has(e.cat) : METALLIC.has(e.cat)))
-    && !swappedIsRealRecipe(e.sym));
+    && !swappedIsRealRecipe(e.sym)
+    && !REAL_LOOKALIKE_PRODUCTS.has(fakeProduct(e.sym)));
+}
+function makeEquationQuestion(pool, zoneKey, madeRecipes){
+  const zoneSyms = new Set(zoneElements(zoneKey).map(e=>e.sym));
+  const zoneRecipes = madeRecipes.filter(rc=>rc.r.some(s=>zoneSyms.has(s)));
+  const candidateRecipes = zoneRecipes.length>0 ? zoneRecipes : madeRecipes;
+  const recipe = candidateRecipes[Math.floor(Math.random()*candidateRecipes.length)];
+  const rightSym = recipe.r[Math.floor(Math.random()*recipe.r.length)];
+  const rightEl = ELEMENTS.find(e=>e.sym===rightSym);
+  const wrongCandidates = equationWrongCandidates(recipe, rightSym);
   const wrongSym = wrongCandidates.length ? wrongCandidates[Math.floor(Math.random()*wrongCandidates.length)].sym : null;
   const optPool = ELEMENTS.filter(e=>e.sym!==rightSym && e.sym!==wrongSym && state.known[e.sym]);
   if(!wrongSym || optPool.length<3) return null;
