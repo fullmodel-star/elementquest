@@ -68,6 +68,7 @@
   .quiz-q{font-size:1.4rem;font-weight:bold;margin-bottom:16px;}
   .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .opt{background:var(--panel2);border:2px solid transparent;border-radius:10px;padding:14px;cursor:pointer;font-size:1rem;}
+  #battleHintBtn{grid-column:1 / -1;margin-top:8px;border-style:dashed;border-color:var(--steel);cursor:pointer;}
   .opt.correct{border-color:var(--success);background:rgba(77,124,94,.22);}
   .opt.wrong{border-color:var(--danger);background:rgba(166,75,56,.22);}
   .craft-wrap{display:flex;flex-direction:column;gap:14px;}
@@ -76,6 +77,10 @@
   .inv-chip.selected{border-color:var(--steel);background:rgba(110,139,163,.22);}
   .slot-row{display:flex;align-items:center;gap:12px;justify-content:center;}
   .slot{width:70px;height:70px;background:var(--panel);border:2px dashed var(--sub);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:bold;}
+  .slot.filled{cursor:pointer;border-style:solid;border-color:var(--steel);}
+  .recipe-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+  .filter-btn{padding:6px 10px;font-size:.75rem;}
+  .filter-btn.active{background:var(--panel2);border-color:var(--steel);color:var(--snow);}
   .recipe-list{display:grid;gap:8px;}
   .recipe-item{background:var(--panel);border-radius:10px;padding:10px 14px;font-size:.85rem;display:flex;justify-content:space-between;align-items:center;}
   .recipe-item.made{color:var(--success);}
@@ -97,7 +102,7 @@
   .ov-cell.placeholder{background:rgba(255,255,255,.05);color:var(--sub);font-size:.55rem;opacity:.5;}
   .ov-cell.filled{cursor:pointer;font-weight:bold;border:1px solid rgba(255,255,255,.25);transition:.15s;}
   .ov-cell.filled:hover{transform:scale(1.08);z-index:2;}
-  .ov-cell.filled.cleared{outline:2px solid var(--success);}
+  .ov-cell.filled.cleared{outline:2px solid var(--gold);box-shadow:0 0 6px rgba(222,154,69,0.7);}
   .ov-cell.filled.selected{outline:2px solid #fff;}
   .ov-cell .ov-sym{font-size:.74rem;}
   .ov-cell .ov-star{position:absolute;top:-3px;right:-3px;font-size:.55rem;filter:drop-shadow(0 0 1px #000);}
@@ -107,6 +112,11 @@
   .ov-dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
   .ov-hint{background:var(--panel);border-radius:12px;padding:14px;font-size:.85rem;line-height:1.6;margin-bottom:14px;}
   .ov-hint b{color:var(--snow);}
+  .ov-scroll-hint{display:none;font-size:.78rem;color:var(--sub);text-align:center;margin-bottom:8px;}
+  @media (max-width:640px){
+    .ov-scroll-hint{display:block;}
+    .slot{width:clamp(52px,16vw,70px);height:clamp(52px,16vw,70px);font-size:clamp(1.1rem,4vw,1.4rem);}
+  }
   .ov-detail{background:var(--panel);border-radius:14px;padding:18px;margin-top:16px;display:none;}
   .ov-detail.show{display:flex;gap:16px;flex-wrap:wrap;}
   .ov-detail-emoji{font-size:3.5rem;width:90px;height:90px;flex-shrink:0;border-radius:14px;background:var(--panel2);display:flex;align-items:center;justify-content:center;}
@@ -177,8 +187,9 @@
   <section id="tab-overview" class="active">
     <div class="ov-hint">
       這就是完整的<b>元素週期表</b>，總共 118 個元素！<b>橫排</b>叫「週期」、<b>直排</b>叫「族」——同一直排的元素個性很像，所以我們把它們分成 9 個王國，一共有 56 個元素會列入「王國試煉」教學範圍。
-      每個格子都可以點下去看介紹；標<b>⭐</b>的是國中會考較常見的元素，優先背熟它們；其餘的先認識一下，之後有機會慢慢收服！破關越多王國，該區塊就會鑲上綠框。
+      每個格子都可以點下去看介紹；標<b>⭐</b>的是國中會考較常見的元素，優先背熟它們；其餘的先認識一下，之後有機會慢慢收服！破關越多王國，該區塊就會鑲上金框。
     </div>
+    <div class="ov-scroll-hint">👉 提示：完整週期表共 18 族，可左右滑動查看</div>
     <div class="ov-wrap"><div class="ov-grid" id="ovGrid"></div></div>
     <div class="ov-legend" id="ovLegend"></div>
     <div class="ov-detail" id="ovDetail"></div>
@@ -209,9 +220,14 @@
           </div>
         </div>
       </div>
-      <div class="btn-row">
+      <div class="btn-row" id="memBtnRow">
         <button class="action secondary" id="btnAgain">😵 還沒記熟</button>
         <button class="action primary" id="btnKnow">✅ 我記住了</button>
+      </div>
+      <div class="btn-row" id="memDoneRow" style="display:none;">
+        <button class="action primary" id="btnMemGoCraft">⚗️ 前往合成台</button>
+        <button class="action primary" id="btnMemGoBattle">⚔️ 挑戰王國試煉</button>
+        <button class="action secondary" id="btnMemRedo">🔁 重新複習翻牌</button>
       </div>
       <p class="small" id="memProgress"></p>
     </div>
@@ -241,7 +257,11 @@
       </div>
       <div>
         <p class="small">合成配方進度：</p>
+        <div class="recipe-filter-row" id="recipeFilterRow"></div>
         <div class="recipe-list" id="recipeList"></div>
+      </div>
+      <div style="text-align:center;margin-top:4px;">
+        <button class="action secondary" id="btnRecipeClue">💎 花 5 顆結晶購買配方線索（現有 0 顆）</button>
       </div>
     </div>
   </section>
@@ -606,7 +626,7 @@ function renderOverview(){
 function renderOvLegend(){
   const legend = document.getElementById("ovLegend");
   legend.innerHTML = Object.keys(CAT_COLOR).map(cat=>`<span><i class="ov-dot" style="background:${CAT_COLOR[cat]}"></i>${cat}</span>`).join("")
-    + `<span>🏆 綠框＝該王國已破關</span>`
+    + `<span>🏆 金框＝該王國已破關</span>`
     + `<span>⭐ 國中會考較常見／常考的元素</span>`;
 }
 function showOvDetail(e, cellEl){
@@ -715,15 +735,19 @@ function showMemCard(){
   const card = document.getElementById("flashcard");
   card.classList.remove("flipped");
   if(memQueue.length===0){
+    document.getElementById("memBtnRow").style.display = "none";
+    document.getElementById("memDoneRow").style.display = "flex";
     card.style.setProperty("--fc", "var(--steel)");
     document.getElementById("cardEmoji").textContent = "🎉";
     document.getElementById("cardSym").textContent = "";
     document.getElementById("cardZh").textContent = "本區已全部背熟！";
     document.getElementById("cardCat").textContent = "";
     document.getElementById("cardExam").textContent = "";
-    document.getElementById("memProgress").textContent = "前往合成台或王國試煉吧";
+    document.getElementById("memProgress").textContent = "前往合成台或王國試煉吧，或重新複習一次翻牌";
     return;
   }
+  document.getElementById("memBtnRow").style.display = "flex";
+  document.getElementById("memDoneRow").style.display = "none";
   const e = memQueue[memIdx % memQueue.length];
   card.style.setProperty("--fc", CAT_COLOR[e.cat] || "var(--steel)");
   document.getElementById("cardEmoji").textContent = e.emoji;
@@ -753,9 +777,19 @@ document.getElementById("btnAgain").addEventListener("click", ()=>{
   memIdx = (memIdx+1) % Math.max(memQueue.length,1);
   showMemCard();
 });
+/* P0-1：本區全背熟後，原本兩顆按鈕會變成死按鈕（memQueue空、點了沒反應），
+   改成三個明確的下一步動作，不再讓玩家卡在一個「看起來還能點」但其實沒用的畫面 */
+document.getElementById("btnMemGoCraft").addEventListener("click", ()=>switchTab("craft"));
+document.getElementById("btnMemGoBattle").addEventListener("click", ()=>switchTab("battle"));
+document.getElementById("btnMemRedo").addEventListener("click", ()=>{
+  memQueue = zoneElements(currentZone).slice();
+  memIdx = 0;
+  showMemCard();
+});
 
 /* ---------- 合成台 ---------- */
 let craftSlots = []; // 最多3個符號，2或3元素合成
+let craftBusy = false; // 合成結果展示期間為 true；pointer-events 擋不住鍵盤 Enter/Space，所以每個入口都要檢查它
 
 /* 危險/知名但無配方的組合，給予風味提示而非單純「沒有反應」 */
 const DANGEROUS_HINTS = {
@@ -789,22 +823,47 @@ function renderCraft(){
   document.getElementById("slotA").textContent = craftSlots[0] || "?";
   document.getElementById("slotB").textContent = craftSlots[1] || "?";
   document.getElementById("slotD").textContent = craftSlots[2] || "-";
-  document.getElementById("btnCraft").disabled = craftSlots.length<2;
+  document.getElementById("slotA").classList.toggle("filled", craftSlots.length>0);
+  document.getElementById("slotB").classList.toggle("filled", craftSlots.length>1);
+  document.getElementById("slotD").classList.toggle("filled", craftSlots.length>2);
+  document.getElementById("btnCraft").disabled = craftBusy || craftSlots.length<2;
   const {made, total} = craftCollectionStats();
   document.getElementById("craftCollectProgress").textContent = `🧪 合成圖鑑：已合成 ${made}/${total}`;
   document.getElementById("craftCollectBar").style.width = total? (made/total*100)+"%" : "0%";
   document.getElementById("craftCollectBar").style.background = "var(--gold)";
+  document.getElementById("btnRecipeClue").textContent = `💎 花 5 顆結晶購買配方線索（現有 ${state.crystals||0} 顆）`;
   renderRecipeList();
 }
 function selectCraftElement(sym){
+  if(craftBusy) return;
   const idx = craftSlots.indexOf(sym);
   if(idx>-1){ craftSlots.splice(idx,1); renderCraft(); return; }
   if(craftSlots.length<3){ craftSlots.push(sym); renderCraft(); }
 }
-document.getElementById("btnClearSlot").addEventListener("click", ()=>{ craftSlots=[]; renderCraft(); });
+/* P0-2：已選入槽的元素可直接點槽位取消選取，不必回庫存列表裡找同一個元素再點一次；
+   槽位是固定的3個DOM元素（不會重建），只在初始化時綁一次 makeClickable，
+   避免每次 renderCraft() 都 addEventListener 疊加造成點一次觸發多次 */
+function removeCraftSlot(idx){
+  if(!craftBusy && idx < craftSlots.length){ craftSlots.splice(idx,1); renderCraft(); }
+}
+["slotA","slotB","slotD"].forEach((id,idx)=>{
+  makeClickable(document.getElementById(id), ()=>removeCraftSlot(idx), "點擊移除這個已選元素");
+});
+document.getElementById("btnClearSlot").addEventListener("click", ()=>{ if(craftBusy) return; craftSlots=[]; renderCraft(); });
 document.getElementById("btnCraft").addEventListener("click", ()=>{
+  if(craftBusy || craftSlots.length<2) return;
+  craftBusy = true;
   const recipe = findRecipe(craftSlots);
   document.getElementById("slotC").textContent = recipe ? recipe.product : "❌";
+  /* P0-4：合成結果要顯示~2.6秒才清空槽位，這段期間先鎖住操作區，
+     避免玩家在結果顯示完之前又點庫存/槽位/合成鈕，把 craftSlots 弄亂 */
+  const craftBtn = document.getElementById("btnCraft");
+  const clearBtn = document.getElementById("btnClearSlot");
+  const invGrid = document.getElementById("invGrid");
+  craftBtn.disabled = true;
+  clearBtn.disabled = true;
+  invGrid.style.pointerEvents = "none";
+  invGrid.style.opacity = "0.5";
   if(recipe){
     const isAlloy = recipe.type==="alloy";
     if(!state.crafted[recipe.product]){
@@ -835,14 +894,60 @@ document.getElementById("btnCraft").addEventListener("click", ()=>{
     toast(DANGEROUS_HINTS[key] || DANGEROUS_HINTS[craftSlots.slice().sort().reverse().join(",")] || "💨 遊戲裡還沒有這個配方，換個組合試試？（不代表現實中一定不會反應喔）", false, 3200);
   }
   craftSlots=[];
-  setTimeout(renderCraft, 2600);
+  setTimeout(()=>{
+    craftBusy = false;
+    invGrid.style.pointerEvents = "";
+    invGrid.style.opacity = "";
+    clearBtn.disabled = false;
+    renderCraft();
+  }, 2600);
   updateHeaderStats();
 });
+/* P1-3：配方清單分類篩選。46個配方全塞一個長清單不好找，加一排篩選鈕；
+   篩選狀態放模組層級變數，重整/換王國不特別保留（跟 craftSlots 一樣是暫時性UI狀態） */
+let recipeFilter = "all";
+function renderRecipeFilters(){
+  const row = document.getElementById("recipeFilterRow");
+  row.innerHTML = "";
+  const madeCount = RECIPES.filter(r=>state.crafted[r.product]).length;
+  const availCount = RECIPES.filter(r=>!state.crafted[r.product] && r.r.every(s=>state.inventory[s])).length;
+  const alloyCount = RECIPES.filter(r=>r.type==="alloy").length;
+  const reactionCount = RECIPES.filter(r=>r.type==="reaction").length;
+  const filters = [
+    {key:"all", label:`全部 (${RECIPES.length})`},
+    {key:"avail", label:`🔓 可嘗試 (${availCount})`},
+    {key:"made", label:`✅ 已合成 (${madeCount})`},
+    {key:"alloy", label:`🔩 合金 (${alloyCount})`},
+    {key:"reaction", label:`⚗️ 反應 (${reactionCount})`}
+  ];
+  filters.forEach(f=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "action secondary filter-btn" + (recipeFilter===f.key ? " active" : "");
+    btn.textContent = f.label;
+    btn.addEventListener("click", ()=>{ recipeFilter = f.key; renderRecipeList(); });
+    row.appendChild(btn);
+  });
+}
 function renderRecipeList(){
+  renderRecipeFilters();
   const list = document.getElementById("recipeList");
   list.innerHTML = "";
   const RARITY_LABEL = {common:"", rare:"🔸稀有", legendary:"🔶傳說"};
-  RECIPES.forEach(r=>{
+  const filtered = RECIPES.filter(r=>{
+    const have = r.r.every(s=>state.inventory[s]);
+    const made = !!state.crafted[r.product];
+    if(recipeFilter==="avail") return !made && have;
+    if(recipeFilter==="made") return made;
+    if(recipeFilter==="alloy") return r.type==="alloy";
+    if(recipeFilter==="reaction") return r.type==="reaction";
+    return true;
+  });
+  if(filtered.length===0){
+    list.innerHTML = `<p class="small" style="text-align:center;">這個篩選條件下目前沒有配方。</p>`;
+    return;
+  }
+  filtered.forEach(r=>{
     const have = r.r.every(s=>state.inventory[s]);
     const made = !!state.crafted[r.product];
     const div = document.createElement("div");
@@ -852,6 +957,30 @@ function renderRecipeList(){
     list.appendChild(div);
   });
 }
+/* P2-1：另一個結晶消耗出口，跟王國試煉的「花3顆排除兩個錯誤選項」是分開機制——
+   這個是在合成台，花5顆直接買一則「尚未合成配方」的風味提示，幫忙鎖定方向而非直接爆雷答案 */
+function buyRecipeClue(){
+  const notCrafted = RECIPES.filter(r=>!state.crafted[r.product]);
+  if(notCrafted.length===0){
+    toast("🎉 你已經解鎖了所有配方！");
+    return;
+  }
+  if((state.crystals||0) < 5){
+    toast(`💎 結晶不夠（需要 5 顆，現有 ${state.crystals||0} 顆）——答題與合成都有機會獲得！`);
+    return;
+  }
+  state.crystals -= 5;
+  const recipe = notCrafted[Math.floor(Math.random()*notCrafted.length)];
+  const clueSym = recipe.r[Math.floor(Math.random()*recipe.r.length)];
+  const msg = recipe.type==="alloy"
+    ? `🔍 神秘線索：嘗試將【${clueSym}】與其他金屬混合，似乎能鍛造出高級合金...`
+    : `🔍 反應線索：某個化學反應需要【${clueSym}】作為材料，試試看能組出什麼！`;
+  saveState();
+  updateHeaderStats();
+  toast(msg, true, 4200);
+  renderCraft();
+}
+document.getElementById("btnRecipeClue").addEventListener("click", buyRecipeClue);
 
 /* ---------- 王國試煉（戰鬥＋分級熟練度＋多題型） ---------- */
 let battle = null;
@@ -894,7 +1023,8 @@ function startBattle(zoneKey, diffKey){
     enemyHp: 100, enemyMaxHp:100,
     pool: pool,
     current: null,
-    qtype: null
+    qtype: null,
+    wrongElements: [] // P1-1：這場試煉答錯過的元素符號（去重），戰敗結算畫面要複盤用
   };
   document.getElementById("diffScreen").style.display = "none";
   document.getElementById("battleScreen").style.display = "block";
@@ -1122,6 +1252,7 @@ function answerBattle(choice, btnEl){
     } else {
       state.mastery[e.sym] = Math.max(0, (state.mastery[e.sym]||0)-1);
       bumpErrorType(e.sym, battle.errType || "symbol");
+      if(!battle.wrongElements.includes(e.sym)) battle.wrongElements.push(e.sym);
       battle.playerHp -= battle.diff.wrongDmg;
       document.getElementById("battleLog").textContent = `❌ ${e.zh}(${e.sym}) 還有點迷惘，熟練度降到 ${state.mastery[e.sym]}/${MASTERY_MAX}，稍後再幫牠一次！`;
     }
@@ -1156,9 +1287,53 @@ function finishBattle(win){
     updateHeaderStats();
     showBattleResult(allGraduated);
   } else {
-    toast("💫 專注力用完了...再試一次！背熟一點再來挑戰吧");
-    switchTab("memorize");
+    showBattleDefeatResult();
   }
+}
+/* P1-1：戰敗結算畫面。原本只丟一個 toast 就強制切回背誦頁，玩家看不到自己剛剛到底錯在哪；
+   改成複用 #battleScreen 容器，列出這場答錯過的元素＋熟練度，讓學生知道接下來該複習誰 */
+function showBattleDefeatResult(){
+  document.getElementById("qtypeTag").textContent = "💔 試煉結算";
+  document.getElementById("battleQ").textContent = "💔 專注力用盡！";
+  const optsDiv = document.getElementById("battleOpts");
+  optsDiv.innerHTML = "";
+  const subtitle = document.createElement("div");
+  subtitle.className = "small";
+  subtitle.style.cssText = "grid-column:1 / -1;margin-bottom:2px;";
+  subtitle.textContent = "元素之靈尚未歸位，複盤一下剛剛答錯的元素：";
+  optsDiv.appendChild(subtitle);
+  const wrongSyms = (battle && battle.wrongElements) || [];
+  if(wrongSyms.length===0){
+    const none = document.createElement("div");
+    none.className = "opt";
+    none.style.cssText = "grid-column:1 / -1;opacity:.7;cursor:default;";
+    none.textContent = "這回合沒有記錄到答錯的元素，可能是連續扣血扣得很快，再挑戰一次吧！";
+    optsDiv.appendChild(none);
+  } else {
+    wrongSyms.forEach(sym=>{
+      const e = ELEMENTS.find(x=>x.sym===sym);
+      if(!e) return;
+      const lvl = state.mastery[sym]||0;
+      const chip = document.createElement("div");
+      chip.className = "opt";
+      chip.style.cssText = "grid-column:1 / -1;cursor:default;";
+      chip.textContent = `🔸 ${e.sym} ${e.zh}　熟練度 ${lvl}/${MASTERY_MAX}`;
+      optsDiv.appendChild(chip);
+    });
+  }
+  const retry = document.createElement("div");
+  retry.className = "opt";
+  retry.style.cssText = "grid-column:1 / -1;font-weight:800;";
+  retry.textContent = "🔄 原地重新挑戰";
+  makeClickable(retry, showDiffScreen, retry.textContent);
+  optsDiv.appendChild(retry);
+  const back = document.createElement("div");
+  back.className = "opt";
+  back.style.cssText = "grid-column:1 / -1;";
+  back.textContent = "📖 回去背誦複習";
+  makeClickable(back, ()=>switchTab("memorize"), back.textContent);
+  optsDiv.appendChild(back);
+  document.getElementById("battleLog").textContent = "背熟一點、拉高熟練度，再回來挑戰這個王國！";
 }
 /* 勝利結算畫面：列出每個元素的熟練度，讓學生一眼看到「還要刷哪幾個」 */
 function showBattleResult(allGraduated){
