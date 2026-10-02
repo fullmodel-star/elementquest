@@ -285,7 +285,7 @@
 
   <section id="tab-craft">
     <div class="craft-wrap">
-      <p class="small">從背過的元素中選 2～3 個組合，看看能不能合成出真實的化學反應產物或合金！</p>
+      <p class="small">從背過的元素中選 2～3 個組合，看看能不能合成出真實的化學反應產物或合金！三元傳說配方要三種材料在王國試煉的熟練度都達 2/5 才能合成。</p>
       <p class="small" id="craftCollectProgress"></p>
       <div class="progress-mini"><i id="craftCollectBar" style="width:0%;"></i></div>
       <div class="slot-row">
@@ -696,6 +696,10 @@ const BALANCE_EXTRA = [
 const BOSS_UNLOCK = 3; // 需合成幾樣才能挑戰終極王國
 const MASTERY_TARGET = 4; // 熟練度滿格門檻（0~5級）
 const MASTERY_MAX = 5;
+/* 三元合成（3 種材料的傳說配方）門檻：每種材料熟練度都要達 2/5。
+   刻意低於破關門檻 MASTERY_TARGET(4)——意思是「這三個元素你在試煉裡都複習過幾次了」，不是要背到滿；
+   已經合成過的三元配方永遠可以複習合成，不會因為熟練度掉下來又被鎖回去 */
+const TRIPLE_MASTERY = 2;
 
 const DIFFICULTIES = [
   {key:"easy", name:"🌱 新手試煉", wrongDmg:8, correctDmg:16, crystalChance:0.08, desc:"扣血少，適合剛背完的人先練手感。"},
@@ -1058,6 +1062,12 @@ function findRecipe(selected){
     return rs.length===set.length && rs.every((s,i)=>s===set[i]);
   });
 }
+/* 三元配方是否可以合成：2 元配方不設門檻；三元配方要三種材料熟練度都達 TRIPLE_MASTERY，合成過的永遠可以 */
+function tripleShortfall(recipe){
+  if(recipe.r.length<3 || state.crafted[recipe.product]) return [];
+  return recipe.r.filter(s=>(state.mastery[s]||0) < TRIPLE_MASTERY);
+}
+function recipeReady(recipe){ return tripleShortfall(recipe).length===0; }
 function craftCollectionStats(){
   const made = RECIPES.filter(r=>state.crafted[r.product]).length;
   return {made, total: RECIPES.length};
@@ -1109,7 +1119,8 @@ document.getElementById("btnCraft").addEventListener("click", ()=>{
   if(craftBusy || craftSlots.length<2) return;
   craftBusy = true;
   const recipe = findRecipe(craftSlots);
-  document.getElementById("slotC").textContent = recipe ? recipe.product : "❌";
+  const shortfall = recipe ? tripleShortfall(recipe) : [];
+  document.getElementById("slotC").textContent = recipe ? (shortfall.length ? "🔐" : recipe.product) : "❌";
   /* P0-4：合成結果要顯示~2.6秒才清空槽位，這段期間先鎖住操作區，
      避免玩家在結果顯示完之前又點庫存/槽位/合成鈕，把 craftSlots 弄亂 */
   const craftBtn = document.getElementById("btnCraft");
@@ -1119,7 +1130,14 @@ document.getElementById("btnCraft").addEventListener("click", ()=>{
   clearBtn.disabled = true;
   invGrid.style.pointerEvents = "none";
   invGrid.style.opacity = "0.5";
-  if(recipe){
+  if(recipe && shortfall.length){
+    /* 組合找對了，只是材料還不夠熟：不算失敗、不扣結晶，三種材料永久記進配方表（等於送一則完整線索），
+       並指名哪幾個元素還要到試煉複習——鼓勵複習，而不是讓孩子覺得被擋 */
+    state.recipeClues[recipe.product] = recipe.r.slice();
+    saveState();
+    const need = shortfall.map(s=>{ const el = ELEMENTS.find(x=>x.sym===s); return `${el.zh}(${s}) ${state.mastery[s]||0}/${MASTERY_MAX}`; }).join("、");
+    toast(`🔐 組合找對了！這是三元傳說配方「${recipe.name.split("（")[0]}」。三種材料的熟練度都要達 ${TRIPLE_MASTERY}/${MASTERY_MAX} 才能合成，還差：${need}。到王國試煉複習幾題就能解鎖！（材料已記進配方表）`, true, 5200);
+  } else if(recipe){
     const isAlloy = recipe.type==="alloy";
     if(!state.crafted[recipe.product]){
       state.crafted[recipe.product] = true;
@@ -1168,7 +1186,7 @@ function renderRecipeFilters(){
   const row = document.getElementById("recipeFilterRow");
   row.innerHTML = "";
   const madeCount = RECIPES.filter(r=>state.crafted[r.product]).length;
-  const availCount = RECIPES.filter(r=>!state.crafted[r.product] && r.r.every(s=>state.inventory[s])).length;
+  const availCount = RECIPES.filter(r=>!state.crafted[r.product] && r.r.every(s=>state.inventory[s]) && recipeReady(r)).length;
   const alloyCount = RECIPES.filter(r=>r.type==="alloy").length;
   const reactionCount = RECIPES.filter(r=>r.type==="reaction").length;
   const filters = [
@@ -1195,7 +1213,7 @@ function renderRecipeList(){
   const filtered = RECIPES.filter(r=>{
     const have = r.r.every(s=>state.inventory[s]);
     const made = !!state.crafted[r.product];
-    if(recipeFilter==="avail") return !made && have;
+    if(recipeFilter==="avail") return !made && have && recipeReady(r);
     if(recipeFilter==="made") return made;
     if(recipeFilter==="alloy") return r.type==="alloy";
     if(recipeFilter==="reaction") return r.type==="reaction";
@@ -1213,7 +1231,17 @@ function renderRecipeList(){
     const typeTag = r.type==="alloy" ? "🔩合金" : "⚗️反應";
     const clues = state.recipeClues[r.product] || [];
     const mats = made ? r.r.join(" + ") : r.r.map(x=>clues.includes(x) ? x : "❓").join(" + ");
-    div.innerHTML = `<span>${made?"✅":(have?"🔓":"🔒")} ${mats} → ${r.name} <span class="small">${typeTag} ${RARITY_LABEL[r.rarity]||""}</span></span><span class="small">${made? r.eq : (have?"可嘗試合成":"尚缺元素")}</span>`;
+    /* 三元配方的熟練度門檻：材料還藏著時只說規則，不點名（避免變相洩漏材料）；材料都揭露了才列出各自的熟練度 */
+    const short = tripleShortfall(r);
+    let status = made ? r.eq : (have ? "可嘗試合成" : "尚缺元素");
+    let icon = made ? "✅" : (have ? "🔓" : "🔒");
+    if(!made && r.r.length===3){
+      const allRevealed = r.r.every(x=>clues.includes(x));
+      const lv = allRevealed ? "：" + r.r.map(x=>`${x} ${state.mastery[x]||0}/${MASTERY_MAX}${(state.mastery[x]||0)>=TRIPLE_MASTERY?"✓":""}`).join("、") : "";
+      if(short.length===0) status = (have ? "可嘗試合成" : "尚缺元素") + `（三元：材料熟練度已達 ${TRIPLE_MASTERY}/${MASTERY_MAX}）`;
+      else { status = `🔐 三元配方：三種材料熟練度都要 ${TRIPLE_MASTERY}/${MASTERY_MAX}${lv}`; if(have) icon = "🔐"; }
+    }
+    div.innerHTML = `<span>${icon} ${mats} → ${r.name} <span class="small">${typeTag} ${RARITY_LABEL[r.rarity]||""}</span></span><span class="small">${status}</span>`;
     list.appendChild(div);
   });
 }
@@ -1455,6 +1483,49 @@ function makeEquationQuestion(pool, zoneKey, madeRecipes){
   };
 }
 
+/* 反向合成：給產物名稱，選出要用哪些元素合成。
+   (1) 只出「化學反應」配方：產物有化學式，元素組成是唯一的（NaCl 只能由 Na、Cl 組成）；
+       合金不出——現實中同一種合金常有好幾種配方（例：無鉛焊錫用錫鉍），會出現第二個正確答案
+   (2) 只出玩家「已合成過」的配方：沒合成過的配方材料在合成台用 ❓ 藏著，不能在試煉裡被爆雷
+   (3) 干擾選項：把同一格材料（優先挑本王國的元素）換成別的元素、其他位置不動。三個干擾選項換的都是同一格，
+       避免「出現最多次的元素就是答案」；換完的組合不能等於正解，也不能是遊戲內任何配方
+   找不到 3 個干擾選項時回傳 null，交給呼叫端 fallback */
+function makeReverseSynthQuestion(pool, craftedReactions){
+  const poolSyms = new Set(pool.map(e=>e.sym));
+  const zoneRecipes = craftedReactions.filter(rc=>rc.r.some(s=>poolSyms.has(s)));
+  const candidates = zoneRecipes.length>0 ? zoneRecipes : craftedReactions;
+  if(candidates.length===0) return null;
+  const recipe = candidates[Math.floor(Math.random()*candidates.length)];
+  const inPool = recipe.r.filter(s=>poolSyms.has(s));
+  const focusFrom = inPool.length ? inPool : recipe.r;
+  const focusSym = focusFrom[Math.floor(Math.random()*focusFrom.length)];
+  const focusEl = ELEMENTS.find(e=>e.sym===focusSym);
+  const idx = recipe.r.indexOf(focusSym);
+  const setKey = arr => arr.slice().sort().join(",");
+  const recipeKeys = new Set(RECIPES.map(rc=>setKey(rc.r)));
+  const swapped = sym => recipe.r.map((s,i)=>i===idx ? sym : s);
+  const swapOk = sym => !recipe.r.includes(sym) && !recipeKeys.has(setKey(swapped(sym)));
+  let swapPool = ELEMENTS.filter(e=>state.known[e.sym] && swapOk(e.sym));
+  if(swapPool.length<3) swapPool = ELEMENTS.filter(e=>swapOk(e.sym));
+  if(swapPool.length<3) return null;
+  // 同分類的元素當干擾項最有教育意義（Na→K、Li），但最多兩個，留一個不同分類的
+  const sameCat = swapPool.filter(e=>e.cat===focusEl.cat).sort(()=>Math.random()-0.5);
+  const otherCat = swapPool.filter(e=>e.cat!==focusEl.cat).sort(()=>Math.random()-0.5);
+  const picks = sameCat.slice(0,2).concat(otherCat, sameCat.slice(2)).slice(0,3);
+  const answer = recipe.r.join(" + ");
+  const opts = [answer].concat(picks.map(e=>swapped(e.sym).join(" + "))).sort(()=>Math.random()-0.5);
+  const shortName = recipe.name.split("（")[0];
+  return {
+    current: focusEl,
+    opts,
+    answer,
+    qtext: `反向合成！想做出「${shortName}」，要用哪些元素？`,
+    errType: "equation",
+    qtype: "reverseSynth",
+    explain: `「${shortName}」要用 ${answer} 合成：${recipe.eq}。`
+  };
+}
+
 /* 預設／fallback：符號 -> 中文名 辨識題 */
 function makeSymbolQuestion(pool){
   const e = pickWeighted(pool);
@@ -1476,15 +1547,19 @@ function nextBattleQuestion(){
   const r = Math.random();
   // 找碴題只用「化學反應」配方——合金是物理混合，沒有反應式可挑錯
   const madeRecipes = RECIPES.filter(rc => rc.type==="reaction" && rc.r.every(s=>state.known[s]));
+  // 反向合成只出已合成過的化學反應配方（未合成的材料在合成台是藏起來的）
+  const craftedReactions = RECIPES.filter(rc => rc.type==="reaction" && state.crafted[rc.product]);
   let qtype = "symbol";
   if(r < 0.15 && pool.length>=3) qtype = "oddOne";
   else if(r < 0.30 && madeRecipes.length>0) qtype = "equation";
   else if(r < 0.50) qtype = "reverseSymbol";
   else if(r < 0.68) qtype = "category";
+  else if(r < 0.80 && craftedReactions.length>0) qtype = "reverseSynth";
 
   let q = null;
   if(qtype==="oddOne") q = makeOddOneQuestion(pool, battle.zone);
   else if(qtype==="equation") q = makeEquationQuestion(pool, battle.zone, madeRecipes);
+  else if(qtype==="reverseSynth") q = makeReverseSynthQuestion(pool, craftedReactions);
   else if(qtype==="reverseSymbol") q = makeReverseSymbolQuestion(pool);
   else if(qtype==="category") q = makeCategoryQuestion(pool);
   if(!q) q = makeSymbolQuestion(pool);
@@ -1498,7 +1573,7 @@ function nextBattleQuestion(){
   battle.explain = q.explain || "";
 }
 
-const QTYPE_LABEL = {symbol:"🔎 辨識", reverseSymbol:"🔁 反向辨識", category:"🏷️ 分類", oddOne:"🧩 跨元素比較", equation:"🐛 找碴"};
+const QTYPE_LABEL = {symbol:"🔎 辨識", reverseSymbol:"🔁 反向辨識", category:"🏷️ 分類", oddOne:"🧩 跨元素比較", equation:"🐛 找碴", reverseSynth:"⚗️ 反向合成"};
 
 function renderBattle(){
   const z = ZONES.find(z=>z.key===battle.zone);
