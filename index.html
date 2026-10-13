@@ -36,6 +36,11 @@
   nav.tabs button{color:#BECBD5;}
   nav.tabs button.active{background:var(--panel2);color:var(--snow);border-color:var(--steel);}
   nav.tabs button:disabled, nav.tabs button.locked{opacity:.35;cursor:not-allowed;}
+  /* 2026-10-13：點到還沒解鎖的分頁時，在分頁下方說明原因＋給一顆去地圖的按鈕（原本只有一閃而過的提示，走查覺得「點了沒反應」） */
+  .lock-hint{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(232,168,92,.55);background:rgba(232,168,92,.12);font-size:.9375rem;line-height:1.6}
+  .lock-hint[hidden]{display:none}
+  .lock-hint span{flex:1 1 220px}
+  .lock-hint .action{flex:0 0 auto;min-height:44px}
   section{display:none;}
   section.active{display:block;}
   .zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;}
@@ -234,6 +239,10 @@
     <button data-tab="battle" class="locked" aria-disabled="true">⚔️ 王國試煉</button>
     <button data-tab="lab">🔬 研究室</button>
   </nav>
+  <div id="lockHint" class="lock-hint" role="status" hidden>
+    <span>🔒 「背誦」「合成台」「王國試煉」要先在地圖選一個王國才會打開：先背熟該王國的元素，再去合成和試煉。</span>
+    <button class="action primary" id="btnLockGoMap">🗺️ 去地圖選王國</button>
+  </div>
 
   <section id="tab-overview" class="active">
     <div class="ov-hint">
@@ -795,10 +804,30 @@ function makeClickable(el, handler, label){
 /* ---------- Tabs ---------- */
 const tabs = document.querySelectorAll("nav.tabs button");
 tabs.forEach(b=>b.addEventListener("click", ()=>{
-  if(b.classList.contains("locked")){ toast("先到「🗺️ 地圖」選一個王國，才能開始背誦、合成和試煉喔！"); return; }
+  if(b.classList.contains("locked")){
+    const h=document.getElementById("lockHint"); h.hidden=false;
+    h.scrollIntoView({block:"nearest", behavior:"smooth"});
+    toast("先到「🗺️ 地圖」選一個王國，才能開始背誦、合成和試煉喔！", false, 3200);
+    return;
+  }
   switchTab(b.dataset.tab);
 }));
+document.getElementById("btnLockGoMap").addEventListener("click", ()=>switchTab("map"));
+/* 返回鍵（2026-10-13）：分頁切換寫入瀏覽紀錄，手機返回鍵回上一個分頁，在首頁（全貌總覽）才離開 App。
+   試煉中按返回：試煉進度保留（battle.active），回到「王國試煉」分頁可接著打。 */
+let curTabName="overview", navFromPop=false;
+try{ if(!history.state||!history.state.tab) history.replaceState({tab:"overview"},""); }catch(_){}
+if(typeof window!=="undefined") window.addEventListener("popstate", e=>{
+  let t=(e.state&&e.state.tab)||"overview";
+  const tb=[...tabs].find(b=>b.dataset.tab===t); if(tb&&tb.classList.contains("locked")) t="overview";
+  const leavingBattle = curTabName==="battle" && battle && battle.active && t!=="battle";
+  navFromPop=true; try{ switchTab(t); } finally{ navFromPop=false; }
+  if(leavingBattle) toast("⚔️ 試煉進度先幫你保留，點「王國試煉」可以接著打", false, 3200);
+});
 function switchTabBase(name){
+  if(!navFromPop && name!==curTabName){ try{ history.pushState({tab:name},""); }catch(_){} }
+  curTabName=name;
+  if(!["memorize","craft","battle"].includes(name) || currentZone) document.getElementById("lockHint").hidden=true;
   const nav = document.querySelector("nav.tabs");
   if(nav.getBoundingClientRect().top < 0) nav.scrollIntoView({block:"start"});
   tabs.forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
