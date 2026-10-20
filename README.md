@@ -22,6 +22,7 @@ RPG 風格的國中元素週期表學習遊戲，單檔 HTML、可離線、可�
 - 品牌識別：學習家族（第納利 Denali，`#4E6A7C`，只用在 App Bar 標記）；2026-10-19 起介面是「勇者冒險」深紫夜空＋金（品牌 v5.0 介面配色自由，見 更新記錄.md），週期表分類色與王國代表色是功能性例外
 - 介面字型與插圖（2026-10-19）：`vendor/round-ui/eq-round.woff2`（jf open 粉圓子集，OFL-1.1）、`vendor/fluent-3d/*.webp`（Fluent Emoji 3D，MIT）；重產用 `_tools/build_round_font.py`、`_tools/build_fluent3d.py`；**改 index.html 文字後要重跑字型腳本**
 - 瀏覽器測試：`node _tools/ui_tests.mjs`（46 項，含版面檢查）
+- 頁尾免責收成「⚠ 使用前須知」點開（2026-10-20，`brand_inject.py --footer-only`）；摘要列手動調成 15px／44px 高，重跑注入器若覆寫 CSS 要再調回
 
 ## 部署
 - GitHub Pages：https://fullmodel-star.github.io/elementquest/
