@@ -282,6 +282,10 @@
   .atom-table tr.bad td{background:rgba(166,75,56,.22);}
   /* ---------- 鍵盤可操作的 div（role=button）焦點樣式 ---------- */
   .zone-card:focus-visible, .inv-chip:focus-visible, .diff-card:focus-visible, .opt:focus-visible, .ov-cell.filled:focus-visible, .flashcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  /* 2026-10-20 頁尾山形白色版：本 App 底色永遠深色，品牌注入區塊內嵌的 navy 山形看不見。
+     放在 RIDGELINE_BRAND 區塊外（重跑 brand_inject.py 不會被洗掉）：藏 navy 圖、以 ::before 顯示白色版（240×97 → 54×22） */
+  footer.rdg-foot .rdg-lock>.rdg-mk{display:none}
+  footer.rdg-foot .rdg-lock::before{content:"";flex-shrink:0;display:block;width:54px;height:22px;background:url(rl-mark-denali-white.png) center/contain no-repeat}
 </style>
 
 <!-- ── 分享預覽（稜線 App 分享卡系統 · 方案A 暖米白）─────────────────────
