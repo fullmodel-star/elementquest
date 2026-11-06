@@ -258,11 +258,11 @@ try {
     const els=[...document.querySelectorAll(sel)]; const bad=els.map(e=>e.textContent||'').filter(t=>/\\p{Extended_Pictographic}/u.test(t));
     return {n:els.length, bad:bad.slice(0,5)}})()`);
   ok('12.5 入口圖格、主視覺、狀態列、模式切換與分頁內按鈕（' + emo.n + ' 個）文字沒有 emoji（圖改用 3D 圖檔）', emo.n >= 20 && emo.bad.length === 0, emo);
-  const tiles = await c.eval(`[...document.querySelectorAll('nav.tabs button')].map(b=>({t:b.dataset.tab, img:!!b.querySelector('img[src*="fluent-3d"]'), op:+getComputedStyle(b).opacity, lock:b.classList.contains('locked'),
+  const tiles = await c.eval(`[...document.querySelectorAll('nav.tabs button')].map(b=>({t:b.dataset.tab, img:!!b.querySelector(b.dataset.tab==='adventure' ? 'img[src="assets/adventure/hero.svg"]' : 'img[src*="fluent-3d"]'), op:+getComputedStyle(b).opacity, lock:b.classList.contains('locked'),
     badge:b.classList.contains('locked') ? getComputedStyle(b,'::after').backgroundImage : '', cond:(b.querySelector('.eq-cond')||{}).offsetParent ? b.querySelector('.eq-cond').textContent : ''}))`);
   const lockedT = tiles.filter((t) => t.lock);
-  ok('12.6 六個入口都是 3D 圖格；鎖住的 ' + lockedT.length + ' 個不灰掉（不透明度 1）、右上有鎖頭、寫出解鎖條件',
-    tiles.length === 6 && tiles.every((t) => t.img && t.op === 1) && lockedT.length === 3 && lockedT.every((t) => /locked/.test(t.badge) && /選.*王國/.test(t.cond)), tiles);
+  ok('12.6 七個入口有各自圖像（冒險使用原創 SVG）；鎖住的 ' + lockedT.length + ' 個不灰掉（不透明度 1）、右上有鎖頭、寫出解鎖條件',
+    tiles.length === 7 && tiles.every((t) => t.img && t.op === 1) && lockedT.length === 3 && lockedT.every((t) => /locked/.test(t.badge) && /選.*王國/.test(t.cond)), tiles);
   const kg = await c.eval(`(()=>{const k=[...document.querySelectorAll('#homeZones .zone-card')]; return {n:k.length, img:k.filter(e=>e.querySelector('img[src*="fluent-3d"]')).length, chips:k.map(e=>e.querySelectorAll('.eq-el i').length),
     boss:(k.find(e=>e.textContent.includes('禁忌放射王座'))||{}).className, op:k.map(e=>+getComputedStyle(e).opacity)}})()`);
   ok('12.7 首頁「九大王國」9 張卡，每張有 3D 圖與元素符號，終極王國鎖住但不灰掉', kg.n === 9 && kg.img === 9 && kg.chips.every((x) => x >= 1) && /locked/.test(kg.boss || '') && kg.op.every((o) => o === 1), kg);
